@@ -50,5 +50,5 @@ def display_random_images(number_images,images,title):
         plt.title(str(i+1))
  
 # Calling the function:
-display_random_images(7,images_class_1,"Class 1")
+display_random_images(6,images_class_1,"Class 1")
 display_random_images(6,images_class_0,"Class 0")   
