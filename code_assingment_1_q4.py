@@ -16,11 +16,21 @@ path_train = r"C:\Users\20192157\OneDrive - TU Eindhoven\Documents\Uni\J3-Q3\8P3
 class_1 = "\\1\\"
 class_0 = "\\0\\"
 
-
+# Use glob to create all pathways to the images
 images_class_1 = glob.glob(path_train + class_1 + '*.jpg', recursive=False)
 images_class_0 = glob.glob(path_train + class_0 + '*.jpg', recursive=False)
     
-def display_random_images(number_images,images):
+def display_random_images(number_images,images,title):
+    '''
+    This function displays multiple random images in a 2-by-X frame.
+    
+    :param number_images: the number of random images which should be displayed
+    :type number_images: int
+    :param images: A list of all the pathways where the images are located
+    :type images: list
+    :param title: What main title should be given to the images
+    :type title: str
+    '''
     
     max = len(images) # Class 1 same lenght as class 0
     rand_list = []
@@ -28,6 +38,7 @@ def display_random_images(number_images,images):
         rand_list.append(rand.randint(0,max))
     
     fig = plt.figure(figsize=(10, 7))
+    fig.suptitle(title)  
     
     columns = 2
     rows = number_images // 2
@@ -43,6 +54,7 @@ def display_random_images(number_images,images):
         plt.imshow(image)
         plt.axis('off')
         plt.title(str(i+1))
-    
-display_random_images(7,images_class_1)
-display_random_images(6,images_class_0)   
+ 
+# Calling the function:
+display_random_images(7,images_class_1,"Class 1")
+display_random_images(6,images_class_0,"Class 0")   
