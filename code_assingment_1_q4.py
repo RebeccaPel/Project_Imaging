@@ -10,7 +10,7 @@ from matplotlib import pyplot as plt
 import glob
 import random as rand
 
-# Because this file is located in the GitHub repository, a path needs to be defined to the location of the images
+# Because this python file is located in the GitHub repository, a path needs to be defined to the location of the images
 path_train = r"C:\Users\20192157\OneDrive - TU Eindhoven\Documents\Uni\J3-Q3\8P361 Project Imaging\train"
 
 class_1 = "\\1\\"
