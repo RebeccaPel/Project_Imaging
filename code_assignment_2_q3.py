@@ -54,7 +54,7 @@ X_train /= 255
 X_val /= 255
 X_test /= 255
 
-# group classes together as follows using a mapping dictionary:
+# group classes together as follows:
 # "vertical digits": 1, 7 = 0
 # "loopy digits": 0, 6, 8, 9 = 1
 # "curly digits": 2, 5 = 2
