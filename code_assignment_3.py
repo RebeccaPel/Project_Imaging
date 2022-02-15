@@ -78,6 +78,7 @@ model = get_model()
 
 # get the data generators
 train_gen, val_gen = get_pcam_generators(r'C:\Users\20192157\OneDrive - TU Eindhoven\Documents\Uni\J3-Q3\8P361 Project Imaging')
+test_gen, test_val_gen = get_pcam_generators(r'C:\Users\20192157\OneDrive - TU Eindhoven\Documents\Uni\J3-Q3\8P361 Project Imaging')
 
 
 
@@ -107,6 +108,8 @@ history = model.fit(train_gen, steps_per_epoch=train_steps,
                     epochs=3,
                     callbacks=callbacks_list)
 
+score = history.evaluate(test_gen, test_val_gen, verbose=0)
+
 ## ROC analysis
 
 # The code has run and has been saved in the GitHub and can be retrieved:
@@ -114,3 +117,71 @@ history = model.fit(train_gen, steps_per_epoch=train_steps,
 
 
 # TODO Perform ROC analysis on the validation set
+
+
+
+## Exercise 2
+
+def get_conv_model(kernel_size=(3,3), pool_size=(4,4), first_filters=32, second_filters=64):
+
+     # build the model
+     model = Sequential()
+
+     model.add(Conv2D(first_filters, kernel_size, activation = 'relu', padding = 'same', input_shape = (IMAGE_SIZE, IMAGE_SIZE, 3)))
+     model.add(MaxPool2D(pool_size = pool_size))
+
+     model.add(Conv2D(second_filters, kernel_size, activation = 'relu', padding = 'same'))
+     model.add(MaxPool2D(pool_size = pool_size))
+     
+     model.add(Conv2D(64, kernel_size, activation = 'relu', padding = 'same')) # this was calculated to give the same parameter number (in total)
+     
+     
+     model.add(Flatten())
+     model.add(Dense(1, activation = 'sigmoid'))
+
+
+     # compile the model
+     model.compile(SGD(learning_rate=0.01, momentum=0.95), loss = 'binary_crossentropy', metrics=['accuracy'])
+     
+     model.summary()
+
+     return model
+
+# get the model
+conv_model = get_conv_model()
+
+
+# save the model and weights
+conv_model_name = 'my_conv_cnn_model'
+conv_model_filepath = model_name + '.json'
+conv_weights_filepath = conv_model_name + '_weights.hdf5'
+
+conv_model_json = conv_model.to_json() # serialize model to JSON
+with open(conv_model_filepath, 'w') as json_file:
+    json_file.write(conv_model_json)
+
+
+# define the model checkpoint and Tensorboard callbacks
+conv_checkpoint = ModelCheckpoint(conv_weights_filepath, monitor='val_loss', verbose=1, save_best_only=True, mode='min')
+conv_tensorboard = TensorBoard(os.path.join('logs', model_name))
+conv_callbacks_list = [conv_checkpoint, conv_tensorboard]
+
+
+# train the model
+
+
+conv_history = model.fit(train_gen, steps_per_epoch=train_steps,
+                    validation_data=val_gen,
+                    validation_steps=val_steps,
+                    epochs=3,
+                    callbacks=conv_callbacks_list)
+
+
+# compare the two models
+
+conv_score = history.evaluate(test_gen, test_val_gen, verbose=0)
+
+print('Test loss original model:', score[0])
+print('Test loss fully convolutional model:', conv_score[0])
+print('Test accuracy original model:', score[1])
+print('Test accuracy fully convolutional model:', conv_score[1])
