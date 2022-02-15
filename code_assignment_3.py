@@ -179,7 +179,7 @@ conv_history = model.fit(train_gen, steps_per_epoch=train_steps,
 
 # compare the two models
 
-conv_score = history.evaluate(test_gen, test_val_gen, verbose=0)
+conv_score = conv_history.evaluate(test_gen, test_val_gen, verbose=0)
 
 print('Test loss original model:', score[0])
 print('Test loss fully convolutional model:', conv_score[0])
