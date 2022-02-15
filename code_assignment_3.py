@@ -66,6 +66,13 @@ def get_model(kernel_size=(3,3), pool_size=(4,4), first_filters=32, second_filte
      model.add(Dense(64, activation = 'relu'))
      model.add(Dense(1, activation = 'sigmoid'))
 
+     
+     # print summary of the model
+     model.summary()
+
+     # compile the model
+     model.compile(SGD(learning_rate=0.01, momentum=0.95), loss = 'binary_crossentropy', metrics=['accuracy'])
+     
 
      # compile the model
      model.compile(SGD(learning_rate=0.01, momentum=0.95), loss = 'binary_crossentropy', metrics=['accuracy'])
@@ -139,11 +146,13 @@ def get_conv_model(kernel_size=(3,3), pool_size=(4,4), first_filters=32, second_
      model.add(Flatten())
      model.add(Dense(1, activation = 'sigmoid'))
 
+     # print summary of the model
+     model.summary()
 
      # compile the model
      model.compile(SGD(learning_rate=0.01, momentum=0.95), loss = 'binary_crossentropy', metrics=['accuracy'])
      
-     model.summary()
+     
 
      return model
 
