@@ -28,8 +28,8 @@ IMAGE_SIZE = 96
 def get_pcam_generators(base_dir, train_batch_size=32, val_batch_size=32):
 
      # dataset parameters
-     train_path = os.path.join(base_dir, 'train+val', 'train')
-     valid_path = os.path.join(base_dir, 'train+val', 'valid')
+     train_path = os.path.join(base_dir, 'train')#'train+val', 'train')
+     valid_path = os.path.join(base_dir, 'valid')#'train+val', 'valid')
 
 
      RESCALING_FACTOR = 1./255
@@ -77,7 +77,7 @@ model = get_model()
 
 
 # get the data generators
-train_gen, val_gen = get_pcam_generators(r'C:\Users\20192157\OneDrive - TU Eindhoven\Documents\Uni\J3-Q3\8P361 Project Imaging\train')
+train_gen, val_gen = get_pcam_generators(r'C:\Users\20192157\OneDrive - TU Eindhoven\Documents\Uni\J3-Q3\8P361 Project Imaging')
 
 
 
@@ -107,6 +107,10 @@ history = model.fit(train_gen, steps_per_epoch=train_steps,
                     epochs=3,
                     callbacks=callbacks_list)
 
-# ROC analysis
+## ROC analysis
+
+# The code has run and has been saved in the GitHub and can be retrieved:
+
+
 
 # TODO Perform ROC analysis on the validation set
