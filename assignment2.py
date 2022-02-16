@@ -66,61 +66,74 @@ y_val = to_categorical(y_val, 10)
 y_test = to_categorical(y_test, 10)
 
 "Assignment 2"
-#comment or uncomment codelines based on which exercise you need
-model = Sequential()
+#exercise 1
+#model for exercise 1a: 1 input layer, 1 hidden layer, 1 output layer
+model_1a = Sequential()
 # flatten the 28x28x1 pixel input images to a row of pixels (a 1D-array)
-model.add(Flatten(input_shape=(28,28,1))) 
-
-#excercise1
-#1a: 1 input layer, 1 hidden layer, 1 output layer
+model_1a.add(Flatten(input_shape=(28,28,1))) 
 # fully connected layer with 64 neurons and ReLU nonlinearity
-#model.add(Dense(64, activation='relu'))
+model_1a.add(Dense(64, activation='relu'))
 # output layer with 10 nodes (one for each class) and softmax nonlinearity
-#model.add(Dense(10, activation='softmax')) 
+model_1a.add(Dense(10, activation='softmax')) 
 
-#1b: 1 input layer, 1 hidden layer, 1 output layer
+#model for exercise 1b: 1 input layer, 1 hidden layer, 1 output layer
+model_1b = Sequential()
+# flatten the 28x28x1 pixel input images to a row of pixels (a 1D-array)
+model_1b.add(Flatten(input_shape=(28,28,1))) 
 # fully connected layer with 128 neurons and ReLU nonlinearity
-#model.add(Dense(128, activation='relu'))
+model_1b.add(Dense(128, activation='relu'))
 # output layer with 10 nodes (one for each class) and softmax nonlinearity
-#model.add(Dense(10, activation='softmax')) 
+model_1b.add(Dense(10, activation='softmax')) 
 
-#1c: 1 input layer, 2 hidden layers, 1 output layer
+#model for exercise 1c: 1 input layer, 2 hidden layers, 1 output layer
+model_1c = Sequential()
+# flatten the 28x28x1 pixel input images to a row of pixels (a 1D-array)
+model_1c.add(Flatten(input_shape=(28,28,1))) 
 # fully connected layer with 64 neurons and ReLU nonlinearity
-#model.add(Dense(64, activation='relu'))
+model_1c.add(Dense(64, activation='relu'))
 # fully connected layer with 64 neurons and ReLU nonlinearity
-#model.add(Dense(64, activation='relu'))
+model_1c.add(Dense(64, activation='relu'))
 # output layer with 10 nodes (one for each class) and softmax nonlinearity
-#model.add(Dense(10, activation='softmax')) 
+model_1c.add(Dense(10, activation='softmax')) 
 
 #exercise2
-#2a: 1 input layer, 1 output layer
+#model for exercise 2a: 1 input layer, 1 output layer
+model_2a = Sequential()
+# flatten the 28x28x1 pixel input images to a row of pixels (a 1D-array)
+model_2a.add(Flatten(input_shape=(28,28,1)))
 # fully connected layer with 64 neurons and ReLU nonlinearity
-#model.add(Dense(64, activation='relu'))
+model_2a.add(Dense(64, activation='relu'))
 # output layer with 10 nodes (one for each class) and softmax nonlinearity
-#model.add(Dense(10, activation='softmax')) 
+model_2a.add(Dense(10, activation='softmax')) 
 
-#2b: 1 input layer, 3 hidden layers, 1 output layer
+#model for exercise 2b: 1 input layer, 3 hidden layers, 1 output layer
+model_2b = Sequential()
+# flatten the 28x28x1 pixel input images to a row of pixels (a 1D-array)
+model_2b.add(Flatten(input_shape=(28,28,1))) 
 # fully connected layer with 64 neurons and ReLU nonlinearity
-#model.add(Dense(64, activation='relu'))
+model_2b.add(Dense(64, activation='relu'))
 # fully connected layer with 64 neurons and ReLU nonlinearity
-#model.add(Dense(64, activation='relu'))
+model_2b.add(Dense(64, activation='relu'))
 # fully connected layer with 64 neurons and ReLU nonlinearity
-#model.add(Dense(64, activation='relu'))
+model_2b.add(Dense(64, activation='relu'))
 # output layer with 10 nodes (one for each class) and softmax nonlinearity
-#model.add(Dense(10, activation='softmax')) 
+model_2b.add(Dense(10, activation='softmax')) 
 
-#2c: 1 input layer, 3 hidden layers, 1 output layer
+#model for exercise 2c: 1 input layer, 3 hidden layers, 1 output layer
+model_2c = Sequential()
+# flatten the 28x28x1 pixel input images to a row of pixels (a 1D-array)
+model_2c.add(Flatten(input_shape=(28,28,1)))
 # fully connected layer with 64 neurons and ReLU nonlinearity
-model.add(Dense(64, activation='linear'))
+model_2c.add(Dense(64, activation='linear'))
 # fully connected layer with 64 neurons and ReLU nonlinearity
-model.add(Dense(64, activation='linear'))
+model_2c.add(Dense(64, activation='linear'))
 # fully connected layer with 64 neurons and ReLU nonlinearity
-model.add(Dense(64, activation='linear'))
+model_2c.add(Dense(64, activation='linear'))
 # output layer with 10 nodes (one for each class) and softmax nonlinearity
-model.add(Dense(10, activation='softmax')) 
+model_2c.add(Dense(10, activation='softmax')) 
 
 # compile the model
-model.compile(loss='categorical_crossentropy', optimizer='sgd', metrics=['accuracy'])
+model_2c.compile(loss='categorical_crossentropy', optimizer='sgd', metrics=['accuracy'])
 
 # use this variable to name your model
 model_name="my_first_model"
@@ -129,10 +142,10 @@ model_name="my_first_model"
 tensorboard = TensorBoard("logs/" + model_name)
 
 # train the model
-model.fit(X_train, y_train, batch_size=32, epochs=10, verbose=1, validation_data=(X_val, y_val), callbacks=[tensorboard])
+model_2c.fit(X_train, y_train, batch_size=32, epochs=10, verbose=1, validation_data=(X_val, y_val), callbacks=[tensorboard])
 
 
-score = model.evaluate(X_test, y_test, verbose=0)
+score = model_2c.evaluate(X_test, y_test, verbose=0)
 
 
 print("Loss: ",score[0])
