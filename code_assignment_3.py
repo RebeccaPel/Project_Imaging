@@ -10,6 +10,7 @@ os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'  # or any {'0', '1', '2'}
 import tensorflow as tf
 
 import numpy as np
+import matplotlib.pyplot as plt
 
 from tensorflow.keras.preprocessing.image import ImageDataGenerator
 from tensorflow.keras.models import Sequential
@@ -41,14 +42,12 @@ def get_pcam_generators(base_dir, train_batch_size=32, val_batch_size=32):
                                              target_size=(IMAGE_SIZE, IMAGE_SIZE),
                                              batch_size=train_batch_size,
                                              class_mode='binary')
-     train_gen_keys = train_gen.class_indices.keys()
      val_gen = datagen.flow_from_directory(valid_path,
                                              target_size=(IMAGE_SIZE, IMAGE_SIZE),
                                              batch_size=val_batch_size,
                                              class_mode='binary')
-     val_gen_keys = val_gen.class_indices.keys()
      
-     return train_gen, val_gen, train_gen_keys, val_gen_keys
+     return train_gen, val_gen
 
 
 def get_model(kernel_size=(3,3), pool_size=(4,4), first_filters=32, second_filters=64):
@@ -85,7 +84,8 @@ model = get_model()
 
 
 # get the data generators
-train_gen, val_gen, train_gen_keys, val_gen_keys = get_pcam_generators(r'C:\Users\20192157\OneDrive - TU Eindhoven\Documents\Uni\J3-Q3\8P361 Project Imaging')
+#train_gen, val_gen = get_pcam_generators(r'C:\Users\20192157\OneDrive - TU Eindhoven\Documents\Uni\J3-Q3\8P361 Project Imaging')
+train_gen, val_gen = get_pcam_generators(r'D:\Ari\Uni\TUE\8P361')
 
 
 
@@ -115,15 +115,24 @@ history = model.fit(train_gen, steps_per_epoch=train_steps,
                     epochs=3,
                     callbacks=callbacks_list)
 
-score = history.evaluate(val_gen, val_gen_keys, verbose=0)
 
 ## ROC analysis
 
+# These are the predictions the model makes of the validation images (as per
+# the exercise)
+val = model.predict(val_gen)
+
+# Now the actual class of the val_gen data is needed:
+labels = val_gen.labels
+
+fpr, tpr, thresholds = roc_curve(labels,val)
+auc_value = auc(fpr,tpr)
+plt.plot(fpr,tpr,label = f"AUC = {auc_value}")
+plt.legend(loc="lower right")
+plt.show()
+score = model.evaluate(val_gen, verbose=0)
+
 # The code has run and has been saved in the GitHub and can be retrieved:
-
-
-
-# TODO Perform ROC analysis on the validation set
 
 
 
@@ -140,8 +149,8 @@ def get_conv_model(kernel_size=(3,3), pool_size=(4,4), first_filters=32, second_
      model.add(Conv2D(second_filters, kernel_size, activation = 'relu', padding = 'same'))
      model.add(MaxPool2D(pool_size = pool_size))
      
-     model.add(Conv2D(64, kernel_size, activation = 'relu', padding = 'same')) # this was calculated to give the same parameter number (in total)
-     
+     model.add(Conv2D(64, (6,6), activation = 'relu', padding = 'same')) # this was calculated to give the same parameter number (in total)
+     model.add(MaxPool2D(pool_size = pool_size))
      
      model.add(Flatten())
      model.add(Dense(1, activation = 'sigmoid'))
@@ -188,7 +197,17 @@ conv_history = model.fit(train_gen, steps_per_epoch=train_steps,
 
 # compare the two models
 
-conv_score = conv_history.evaluate(val_gen, val_gen_keys, verbose=0)
+# These are the predictions the model makes of the validation images (as per
+# the exercise)
+val = model.predict(val_gen)
+
+# Now the actual class of the val_gen data is needed:
+labels = val_gen.labels#class_indices#.keys()
+
+fpr, tpr, thresholds = roc_curve(labels,val)
+plt.plot(fpr,tpr)
+
+conv_score = conv_history.evaluate(val_gen, labels, verbose=0)
 
 print('Test loss original model:', score[0])
 print('Test loss fully convolutional model:', conv_score[0])
