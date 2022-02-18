@@ -18,8 +18,9 @@ from tensorflow.keras.models import model_from_json
 
 #Change these variables to point at the locations and names of the test dataset and your models.
 TEST_PATH = r'D:\Ari\Uni\TUE\8P361/test/' 
-MODEL_FILEPATH = r'C:\Users\Ari\Desktop\TUE\Project_Imaging\my_conv_cnn_model.json' 
-MODEL_WEIGHTS_FILEPATH = r'C:\Users\Ari\Desktop\TUE\Project_Imaging\my_conv_cnn_model_weights.hdf5'
+MODEL_FILEPATH = r'C:\Users\Ari\Desktop\TUE\Project_Imaging\Assignment models\my_conv_cnn_model.json' 
+MODEL_WEIGHTS_FILEPATH = r'C:\Users\Ari\Desktop\TUE\Project_Imaging\Assignment models\my_conv_cnn_model_weights.hdf5'
+
 
 # load model and model weights
 json_file = open(MODEL_FILEPATH, 'r')
@@ -65,4 +66,4 @@ for idx in range(0, max_idx, file_batch):
 
 # save your submission
 submission.head()
-submission.to_csv('submission.csv', index = False, header = True)
+submission.to_csv('submission_conv.csv', index = False, header = True)

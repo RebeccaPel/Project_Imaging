@@ -88,9 +88,10 @@ train_gen, val_gen, datagen = get_pcam_generators(path)
 
 
 # save the model and weights
+model_path = '../Assignment models/'
 model_name = 'my_first_cnn_model'
-model_filepath = model_name + '.json'
-weights_filepath = model_name + '_weights.hdf5'
+model_filepath = model_path + model_name + '.json'
+weights_filepath = model_path + model_name + '_weights.hdf5'
 
 model_json = model.to_json() # serialize model to JSON
 with open(model_filepath, 'w') as json_file:
@@ -176,8 +177,8 @@ conv_model = get_conv_model()
 
 # save the model and weights
 conv_model_name = 'my_conv_cnn_model'
-conv_model_filepath = conv_model_name + '.json'
-conv_weights_filepath = conv_model_name + '_weights.hdf5'
+conv_model_filepath = model_path + conv_model_name + '.json'
+conv_weights_filepath = model_path + conv_model_name + '_weights.hdf5'
 
 conv_model_json = conv_model.to_json() # serialize model to JSON
 with open(conv_model_filepath, 'w') as json_file:
