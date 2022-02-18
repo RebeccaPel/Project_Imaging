@@ -107,14 +107,16 @@ callbacks_list = [checkpoint, tensorboard]
 train_steps = train_gen.n//train_gen.batch_size
 val_steps = val_gen.n//val_gen.batch_size
 
-history = model.fit(train_gen, steps_per_epoch=train_steps/20,
-                    validation_data=val_gen,
-                    validation_steps=val_steps/20,
-                    epochs=3,
-                    callbacks=callbacks_list)
+# history = model.fit(train_gen, steps_per_epoch=train_steps/20,
+#                     validation_data=val_gen,
+#                     validation_steps=val_steps/20,
+#                     epochs=3,
+#                     callbacks=callbacks_list)
 
+# load the model after it has been trained to avoid long computation times after training
+model = tf.keras.models.load_model(model_filepath)
 
-hist = history.history # Get relevant information for each epoch
+# hist = history.history # Get relevant information for each epoch
 
 # These are the predictions the model makes of the validation images (as per
 # the exercise)
@@ -127,15 +129,18 @@ labels = val_gen.labels
 
 fpr, tpr, thresholds = roc_curve(labels,val)
 auc_value = auc(fpr,tpr)
-plt.plot(fpr,tpr,label = f"AUC = {auc_value}")
+plt.plot(fpr,tpr,label = f"AUC first model = {auc_value}")
 plt.legend(loc="lower right")
+plt.title('ROC curve of the model')
+plt.xlabel('FPR')
+plt.ylabel('TPR')
 
 score = model.evaluate(val_gen, verbose=0)
 
 # The code has run and has been saved in the GitHub and can be retrieved:
 
 
-## Fully convolutional model
+## Equivalent model with only convolutional layers
 
 def get_conv_model(kernel_size=(3,3), pool_size=(4,4), first_filters=32, second_filters=64):
 
@@ -181,20 +186,21 @@ with open(conv_model_filepath, 'w') as json_file:
 
 # define the model checkpoint and Tensorboard callbacks
 conv_checkpoint = ModelCheckpoint(conv_weights_filepath, monitor='val_loss', verbose=1, save_best_only=True, mode='min')
-conv_tensorboard = TensorBoard(os.path.join('logs', model_name))
+conv_tensorboard = TensorBoard(os.path.join('logs', conv_model_name))
 conv_callbacks_list = [conv_checkpoint, conv_tensorboard]
 
 
 # train the model
 
-conv_history = model.fit(train_gen, steps_per_epoch=train_steps,
-                     validation_data=val_gen,
-                     validation_steps=val_steps,
-                     epochs=3,
-                     callbacks=conv_callbacks_list)
+# conv_history = conv_model.fit(train_gen, steps_per_epoch=train_steps,
+#                      validation_data=val_gen,
+#                      validation_steps=val_steps,
+#                      epochs=3,
+#                      callbacks=conv_callbacks_list)
 
 
-
+# load the model after it has been trained to avoid long computation times after training
+conv_model = tf.keras.models.load_model(conv_model_filepath)
 
 # These are the predictions the model makes of the validation images (as per
 # the exercise)
@@ -203,9 +209,13 @@ conv_val = conv_model.predict(val_gen)
 # Now the actual class of the val_gen data is needed:
 conv_labels = val_gen.labels
 
-conv_fpr, conv_tpr, conv_thresholds = roc_curve(conv_labels,conv_val)
-plt.plot(fpr,tpr,label = f"AUC = {auc_value}")
+conv_fpr, conv_tpr, conv_thresholds = roc_curve(labels,conv_val)
+conv_auc_value = auc(conv_fpr, conv_tpr)
+plt.plot(conv_fpr,conv_tpr,label = f"AUC convolutional model = {auc_value}")
 plt.legend(loc="lower right")
+plt.title('ROC curve comparison for both models')
+plt.xlabel('FPR')
+plt.ylabel('TPR')
 
 # compare the two models
 conv_score = conv_model.evaluate(val_gen, verbose=0)
