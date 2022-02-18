@@ -176,7 +176,7 @@ conv_model = get_conv_model()
 
 # save the model and weights
 conv_model_name = 'my_conv_cnn_model'
-conv_model_filepath = model_name + '.json'
+conv_model_filepath = conv_model_name + '.json'
 conv_weights_filepath = conv_model_name + '_weights.hdf5'
 
 conv_model_json = conv_model.to_json() # serialize model to JSON
