@@ -17,9 +17,13 @@ from tensorflow.keras.layers import Dense, Flatten
 from tensorflow.keras.layers import Conv2D, MaxPool2D
 from tensorflow.keras.optimizers import SGD
 from tensorflow.keras.callbacks import ModelCheckpoint, TensorBoard
+from tensorflow.keras.models import model_from_json
+from tensorflow.math import confusion_matrix
+
 
 from sklearn.metrics import roc_curve, auc
 import matplotlib.pyplot as plt
+
 
 # the size of the images in the PCAM dataset
 IMAGE_SIZE = 96
@@ -88,7 +92,7 @@ train_gen, val_gen, datagen = get_pcam_generators(path)
 
 
 # save the model and weights
-model_path = '../Assignment models/'
+model_path = '../../Assignment models/'
 model_name = 'my_first_cnn_model'
 model_filepath = model_path + model_name + '.json'
 weights_filepath = model_path + model_name + '_weights.hdf5'
@@ -108,16 +112,26 @@ callbacks_list = [checkpoint, tensorboard]
 train_steps = train_gen.n//train_gen.batch_size
 val_steps = val_gen.n//val_gen.batch_size
 
-# history = model.fit(train_gen, steps_per_epoch=train_steps/20,
+# Commented as to not accidentally retrain
+# history = model.fit(train_gen, steps_per_epoch=train_steps,
 #                     validation_data=val_gen,
-#                     validation_steps=val_steps/20,
+#                     validation_steps=val_steps,
 #                     epochs=3,
 #                     callbacks=callbacks_list)
+#
+# hist = history.history # Get relevant information for each epoch
 
 # load the model after it has been trained to avoid long computation times after training
-model = tf.keras.models.load_model(model_filepath)
+model_json_file = open(model_filepath, 'r')
+loaded_model_json = model_json_file.read()
+model_json_file.close()
+model = model_from_json(loaded_model_json)
 
-# hist = history.history # Get relevant information for each epoch
+# load weights into new model
+model.load_weights(weights_filepath)
+
+# the model needs to be recompiled if loaded instead of trained (comment out if training)
+model.compile(SGD(learning_rate=0.01, momentum=0.95), loss = 'binary_crossentropy', metrics=['accuracy'])
 
 # These are the predictions the model makes of the validation images (as per
 # the exercise)
@@ -136,9 +150,11 @@ plt.title('ROC curve of the model')
 plt.xlabel('FPR')
 plt.ylabel('TPR')
 
-score = model.evaluate(val_gen, verbose=0)
+conf_matrix = confusion_matrix(labels, val)
+print(conf_matrix)
 
-# The code has run and has been saved in the GitHub and can be retrieved:
+# evaluating the model
+score = model.evaluate(val_gen, verbose=0)
 
 
 ## Equivalent model with only convolutional layers
@@ -167,7 +183,6 @@ def get_conv_model(kernel_size=(3,3), pool_size=(4,4), first_filters=32, second_
 
       # compile the model
       model.compile(SGD(learning_rate=0.01, momentum=0.95), loss = 'binary_crossentropy', metrics=['accuracy'])
-     
 
       return model
 
@@ -191,20 +206,28 @@ conv_tensorboard = TensorBoard(os.path.join('logs', conv_model_name))
 conv_callbacks_list = [conv_checkpoint, conv_tensorboard]
 
 
-# train the model
+# train the model- commented as to not retrain
 
 # conv_history = conv_model.fit(train_gen, steps_per_epoch=train_steps,
-#                      validation_data=val_gen,
-#                      validation_steps=val_steps,
-#                      epochs=3,
-#                      callbacks=conv_callbacks_list)
+#                       validation_data=val_gen,
+#                       validation_steps=val_steps,
+#                       epochs=3,
+#                       callbacks=conv_callbacks_list)
 
 
 # load the model after it has been trained to avoid long computation times after training
-conv_model = tf.keras.models.load_model(conv_model_filepath)
+conv_model_json_file = open(conv_model_filepath, 'r')
+conv_loaded_model_json = conv_model_json_file.read()
+conv_model_json_file.close()
+conv_model = model_from_json(conv_loaded_model_json)
 
-# These are the predictions the model makes of the validation images (as per
-# the exercise)
+# load weights into new model
+conv_model.load_weights(conv_weights_filepath)
+
+# the model needs to be recompiled if loaded instead of trained (comment out if training)
+conv_model.compile(SGD(learning_rate=0.01, momentum=0.95), loss = 'binary_crossentropy', metrics=['accuracy'])
+
+# These are the predictions the model makes of the validation images
 conv_val = conv_model.predict(val_gen)
 
 # Now the actual class of the val_gen data is needed:
@@ -212,11 +235,14 @@ conv_labels = val_gen.labels
 
 conv_fpr, conv_tpr, conv_thresholds = roc_curve(labels,conv_val)
 conv_auc_value = auc(conv_fpr, conv_tpr)
-plt.plot(conv_fpr,conv_tpr,label = f"AUC convolutional model = {auc_value}")
+plt.plot(conv_fpr,conv_tpr,label = f"AUC convolutional model = {conv_auc_value}")
 plt.legend(loc="lower right")
 plt.title('ROC curve comparison for both models')
 plt.xlabel('FPR')
 plt.ylabel('TPR')
+
+conv_conf_matrix = confusion_matrix(labels,conv_val)
+print(conv_conf_matrix)
 
 # compare the two models
 conv_score = conv_model.evaluate(val_gen, verbose=0)
