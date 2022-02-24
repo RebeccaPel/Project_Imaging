@@ -86,13 +86,14 @@ model = get_model()
 
 # Choosing the appropriate path
 #path = r'C:\Users\20192157\OneDrive - TU Eindhoven\Documents\Uni\J3-Q3\8P361 Project Imaging'
-path = r'C:\Users\justi\PycharmProjects\pythonProject\train+val'
+#path = r'C:\Users\justi\PycharmProjects\pythonProject\train+val'
+path = r'D:\Ari\Uni\TUE\8P361'
 
 train_gen, val_gen, datagen = get_pcam_generators(path)
 
 
 # save the model and weights
-model_path = r'C:\Users\justi\Documents\Project_Imaging\Assignment models\\'
+model_path = 'C:/Users/Ari/Desktop/TUE/Project_Imaging/Assignment models/'
 model_name = 'my_first_cnn_model'
 model_filepath = model_path + model_name + '.json'
 weights_filepath = model_path + model_name + '_weights.hdf5'
@@ -154,7 +155,7 @@ labels = labels.reshape((16000,))
 
 fpr, tpr, thresholds = roc_curve(labels,val.reshape((val.shape[0],)))
 auc_value = auc(fpr,tpr)
-plt.plot(fpr,tpr,label = f"AUC first model = {auc_value}")
+plt.plot(fpr,tpr,label = f"AUC = {auc_value}")
 plt.legend(loc="lower right")
 plt.title('ROC curve of the model')
 plt.xlabel('FPR')
@@ -241,24 +242,25 @@ conv_model.compile(SGD(learning_rate=0.01, momentum=0.95), loss = 'binary_crosse
 conv_images = []
 for i in range(500):
     conv_images.append(val_gen[i][0])
-conv_images = np.array(images)
-conv_images = images.reshape(16000,96,96,3)
+conv_images = np.array(conv_images)
+conv_images = conv_images.reshape(16000,96,96,3)
 
 # These are the predictions the model makes of the validation images
 conv_val = conv_model.predict(conv_images)
 
 # Now the actual class of the val_gen data is needed:
-labels = []
+conv_labels = []
 for i in range(500):
-    labels.append(val_gen[i][1])
-labels = np.array(labels)
-labels = labels.reshape((16000,))
+    conv_labels.append(val_gen[i][1])
+conv_labels = np.array(conv_labels)
+conv_labels = conv_labels.reshape((16000,))
 
-conv_fpr, conv_tpr, conv_thresholds = roc_curve(labels,conv_val)
+
+conv_fpr, conv_tpr, conv_thresholds = roc_curve(conv_labels,conv_val.reshape((conv_val.shape[0],)))
 conv_auc_value = auc(conv_fpr, conv_tpr)
-plt.plot(conv_fpr,conv_tpr,label = f"AUC convolutional model = {conv_auc_value}")
+plt.plot(conv_fpr,conv_tpr,label = f"AUC = {conv_auc_value}")
 plt.legend(loc="lower right")
-plt.title('ROC curve comparison for both models')
+plt.title('ROC curve for the convolutional model')
 plt.xlabel('FPR')
 plt.ylabel('TPR')
 plt.show()
