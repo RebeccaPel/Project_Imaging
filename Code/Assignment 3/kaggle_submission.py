@@ -18,8 +18,8 @@ from tensorflow.keras.models import model_from_json
 
 #Change these variables to point at the locations and names of the test dataset and your models.
 TEST_PATH = r'D:\Ari\Uni\TUE\8P361/test/' 
-MODEL_FILEPATH = r'C:\Users\Ari\Desktop\TUE\Project_Imaging\Assignment models\my_furst_cnn_model.json' 
-MODEL_WEIGHTS_FILEPATH = r'C:\Users\Ari\Desktop\TUE\Project_Imaging\Assignment models\my_first_cnn_model_weights.hdf5'
+MODEL_FILEPATH = r'C:\Users\justi\Documents\Project_Imaging\Assignment models\my_first_cnn_model.json'
+MODEL_WEIGHTS_FILEPATH = r'C:\Users\justi\Documents\Project_Imaging\Assignment models\my_first_cnn_model_weights.hdf5'
 
 
 # load model and model weights

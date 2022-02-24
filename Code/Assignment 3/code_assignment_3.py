@@ -86,13 +86,13 @@ model = get_model()
 
 # Choosing the appropriate path
 #path = r'C:\Users\20192157\OneDrive - TU Eindhoven\Documents\Uni\J3-Q3\8P361 Project Imaging'
-path = r'D:\Ari\Uni\TUE\8P361'
+path = r'C:\Users\justi\PycharmProjects\pythonProject\train+val'
 
 train_gen, val_gen, datagen = get_pcam_generators(path)
 
 
 # save the model and weights
-model_path = '../../Assignment models/'
+model_path = r'C:\Users\justi\Documents\Project_Imaging\Assignment models\\'
 model_name = 'my_first_cnn_model'
 model_filepath = model_path + model_name + '.json'
 weights_filepath = model_path + model_name + '_weights.hdf5'
@@ -118,7 +118,7 @@ val_steps = val_gen.n//val_gen.batch_size
 #                     validation_steps=val_steps,
 #                     epochs=3,
 #                     callbacks=callbacks_list)
-#
+
 # hist = history.history # Get relevant information for each epoch
 
 # load the model after it has been trained to avoid long computation times after training
@@ -135,22 +135,32 @@ model.compile(SGD(learning_rate=0.01, momentum=0.95), loss = 'binary_crossentrop
 
 # These are the predictions the model makes of the validation images (as per
 # the exercise)
-val = model.predict(val_gen)
+images = []
+for i in range(500):
+    images.append(val_gen[i][0])
+images = np.array(images)
+images = images.reshape(16000,96,96,3)
+
+val = model.predict(images)
 
 # Now the actual class of the val_gen data is needed:
-labels = val_gen.labels
+labels = []
+for i in range(500):
+    labels.append(val_gen[i][1])
+labels = np.array(labels)
+labels = labels.reshape((16000,))
 
 ## ROC analysis
 
-fpr, tpr, thresholds = roc_curve(labels,val)
+fpr, tpr, thresholds = roc_curve(labels,val.reshape((val.shape[0],)))
 auc_value = auc(fpr,tpr)
 plt.plot(fpr,tpr,label = f"AUC first model = {auc_value}")
 plt.legend(loc="lower right")
 plt.title('ROC curve of the model')
 plt.xlabel('FPR')
 plt.ylabel('TPR')
-
-conf_matrix = confusion_matrix(labels, val)
+plt.show()
+conf_matrix = confusion_matrix(labels, val.reshape((val.shape[0],)))
 print(conf_matrix)
 
 # evaluating the model
@@ -228,10 +238,21 @@ conv_model.load_weights(conv_weights_filepath)
 conv_model.compile(SGD(learning_rate=0.01, momentum=0.95), loss = 'binary_crossentropy', metrics=['accuracy'])
 
 # These are the predictions the model makes of the validation images
-conv_val = conv_model.predict(val_gen)
+conv_images = []
+for i in range(500):
+    conv_images.append(val_gen[i][0])
+conv_images = np.array(images)
+conv_images = images.reshape(16000,96,96,3)
+
+# These are the predictions the model makes of the validation images
+conv_val = conv_model.predict(conv_images)
 
 # Now the actual class of the val_gen data is needed:
-conv_labels = val_gen.labels
+labels = []
+for i in range(500):
+    labels.append(val_gen[i][1])
+labels = np.array(labels)
+labels = labels.reshape((16000,))
 
 conv_fpr, conv_tpr, conv_thresholds = roc_curve(labels,conv_val)
 conv_auc_value = auc(conv_fpr, conv_tpr)
@@ -240,6 +261,7 @@ plt.legend(loc="lower right")
 plt.title('ROC curve comparison for both models')
 plt.xlabel('FPR')
 plt.ylabel('TPR')
+plt.show()
 
 conv_conf_matrix = confusion_matrix(labels,conv_val)
 print(conv_conf_matrix)
