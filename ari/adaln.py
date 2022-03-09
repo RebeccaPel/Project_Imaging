@@ -69,10 +69,6 @@ class AdaInstanceNormalization(Layer):
 
 
 
-
-
-
-
 #Input b and g should be HxWxC
 class SPADE(Layer):
     def __init__(self, 

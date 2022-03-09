@@ -13,6 +13,7 @@ from np.random import randn
 
 import keras
 keras.backend.set_image_data_format('channels_first')
+from keras.models import Model
 from keras.layers.core import Dense, Flatten, Reshape
 from keras.layers.advanced_activations import LeakyReLU
 from keras.layers import Input, Attention
@@ -82,58 +83,61 @@ def get_discriminator_histopathology(input_size):
    Returns:
        The discriminator model.
    """
-   discriminator = keras.models.Sequential()
+   #discriminator = keras.models.Sequential()
    
    #since resnet works with an input layer, make the input to work with resnet
    image_input = Input(shape=(3, input_size, input_size)) #CHECK WHERE THE THREE GOES
    
    #resnet conv2d, 3x3, stride 1, pad same, leakyReLu 0.2, 3
-   discriminator.add(residual_module(image_input, 3))
-   discriminator.add(LeakyReLU(0.2))
+   layer_in = residual_module(image_input, 3)
+   layer_in = LeakyReLU(0.2)(layer_in)
    
    #conv2d 2x2, stride 2, pad downscale, leakyReLu 0.2
-   discriminator.add(Conv2D(3, kernel_size=(2, 2), strides=(2, 2), padding='downscale'))
-   discriminator.add(LeakyReLU(0.2))
+   layer_in = Conv2D(3, kernel_size=(2, 2), strides=(2, 2), padding='downscale')(layer_in)
+   layer_in = LeakyReLU(0.2)(layer_in)
    
    #resnet conv2d, 3x3, stride 1, pad same, leakyReLu 0.2, 32
-   discriminator.add(residual_module(discriminator.layers[-1], 32))
-   discriminator.add(LeakyReLU(0.2))
+   layer_in = residual_module(image_input, 32)
+   layer_in = LeakyReLU(0.2)(layer_in)
    
    #conv2d 2x2, stride 2, pad downscale, leakyReLu 0.2, 32
-   discriminator.add(Conv2D(32, kernel_size=(2, 2), strides=(2, 2), padding='downscale'))
-   discriminator.add(LeakyReLU(0.2))
+   layer_in = Conv2D(32, kernel_size=(2, 2), strides=(2, 2), padding='downscale')(layer_in)
+   layer_in = LeakyReLU(0.2)(layer_in)
    
    #resnet conv2d, 3x3, stride 1, pad same, leakyReLu 0.2, 64
-   discriminator.add(residual_module(discriminator.layers[-1], 64))
-   discriminator.add(LeakyReLU(0.2))
+   layer_in = residual_module(image_input, 64)
+   layer_in = LeakyReLU(0.2)(layer_in)
    
    #conv2d 2x2, stride 2, pad downscale, leakyReLu 0.2, 64
-   discriminator.add(Conv2D(64, kernel_size=(2, 2), strides=(2, 2), padding='downscale'))
-   discriminator.add(LeakyReLU(0.2))
+   layer_in = Conv2D(64, kernel_size=(2, 2), strides=(2, 2), padding='downscale')(layer_in)
+   layer_in = LeakyReLU(0.2)(layer_in)
    
    #resnet conv2d, 3x3, stride 1, pad same, leakyReLu 0.2, 128
-   discriminator.add(residual_module(discriminator.layers[-1], 128))
-   discriminator.add(LeakyReLU(0.2))
+   layer_in = residual_module(image_input, 128)
+   layer_in = LeakyReLU(0.2)(layer_in)
    
    #Attention Layer at 28x28x128 - No parameters are specified, nor the type of attention layer, so default for now
-   discriminator.add(Attention())
+   layer_in = Attention()(layer_in)
    
    #conv2d 2x2, stride 2, pad downscale, leakyReLu 0.2, 128
-   discriminator.add(Conv2D(128, kernel_size=(2, 2), strides=(2, 2), padding='downscale'))
-   discriminator.add(LeakyReLU(0.2))
+   layer_in = Conv2D(128, kernel_size=(2, 2), strides=(2, 2), padding='downscale')(layer_in)
+   layer_in = LeakyReLU(0.2)(layer_in)
    
    #resnet conv2d, 3x3, stride 1, pad same, leakyReLu 0.2, 256
-   discriminator.add(residual_module(discriminator.layers[-1], 256))
-   discriminator.add(LeakyReLU(0.2))
+   layer_in = residual_module(image_input, 256)
+   layer_in = LeakyReLU(0.2)(layer_in)
    
    #conv2d 2x2, stride 2, pad downscale, leakyReLu 0.2, 256
-   discriminator.add(Conv2D(256, kernel_size=(2, 2), strides=(2, 2), padding='downscale'))
-   discriminator.add(LeakyReLU(0.2))
+   layer_in = Conv2D(256, kernel_size=(2, 2), strides=(2, 2), padding='downscale')(layer_in)
+   layer_in = LeakyReLU(0.2)(layer_in)
    
-   discriminator.add(Flatten()) #7x7x512
-   discriminator.add(Dense(1024))
-   discriminator.add(LeakyReLU())
-   discriminator.add(Dense(1, activation='leaky_relu'))
+   layer_in = Flatten()(layer_in) #7x7x512
+   layer_in = Dense(1024)(layer_in)
+   layer_in = LeakyReLU()(layer_in)
+   layer_out = Dense(1, activation='leaky_relu')(layer_in)
+   
+   discriminator = Model(inputs = image_input, outputs = layer_out)
+   
    return discriminator
 
 
@@ -147,86 +151,89 @@ def get_generator_histopathology(latent_dim = 300):
     Returns:
         The generaot model.
     """
-    generator = keras.models.Sequential()
+    #generator = keras.models.Sequential()
     
     #CHECK PARAMETERS OF DENSE AND ReLU
-    generator.add(Dense(128*7*7, input_dim=latent_dim, kernel_initializer=keras.initializers.RandomNormal(stddev=0.02)))
+    inputs = Dense(128*7*7, input_dim=latent_dim, kernel_initializer=keras.initializers.RandomNormal(stddev=0.02))
     #AdaIN
-    generator.add(adaln.AdaInstanceNormalization(generator.layers[-1]))
-    generator.add(LeakyReLU()) #Ran with default becasue 0.2 is not specified, default is 0.3
+    layer_in = adaln.AdaInstanceNormalization()(inputs)
+    layer_in = LeakyReLU()(layer_in) #Ran with default becasue 0.2 is not specified, default is 0.3
     
-    generator.add(Dense(128*7*7, input_dim=300, kernel_initializer=keras.initializers.RandomNormal(stddev=0.02)))
+    layer_in = Dense(128*7*7, input_dim=300, kernel_initializer=keras.initializers.RandomNormal(stddev=0.02))(layer_in)
     #AdaIN
-    generator.add(adaln.AdaInstanceNormalization(generator.layers[-1]))
-    generator.add(LeakyReLU())
+    layer_in = adaln.AdaInstanceNormalization()(layer_in)
+    layer_in = LeakyReLU()(layer_in) #Ran with default becasue 0.2 is not specified, default is 0.3
     
-    generator.add(Reshape((256, 7, 7)))
+    layer_in = Reshape((256, 7, 7))(layer_in)
     
     ##1 resnet, adain, leakyrelu 0.2
     #ResNet Conv2D Layer, 3x3, stride 1, pad same, 256
-    generator.add(residual_module(generator.layers[-1], 256))
+    layer_in = residual_module(layer_in, 256)
     #AdaIN
-    generator.add(adaln.AdaInstanceNormalization(generator.layers[-1]))
-    generator.add(LeakyReLU(0.2))
+    layer_in = adaln.AdaInstanceNormalization()(layer_in)
+    layer_in = LeakyReLU(0.2)(layer_in)
     
-    generator.add(Conv2DTranspose(256, kernel_size=(2, 2), strides=(2,2), padding='upscale')) #CHECK IF UPSCALE WORKS
+    layer_in = Conv2DTranspose(256, kernel_size=(2, 2), strides=(2,2), padding='upscale')(layer_in) #CHECK IF UPSCALE WORKS
     #AdaIN
-    generator.add(adaln.AdaInstanceNormalization(generator.layers[-1]))
-    generator.add(LeakyReLU(0.2))
+    layer_in = adaln.AdaInstanceNormalization()(layer_in)
+    layer_in = LeakyReLU(0.2)(layer_in)
     
     ##2 resnet, adain, leakyrelu 0.2
     #add ResNet Conv2D Layer, 3x3, stride 1, pad same, 512
-    generator.add(residual_module(generator.layers[-1], 512))
+    layer_in = residual_module(layer_in, 512)
     #AdaIN
-    generator.add(adaln.AdaInstanceNormalization(generator.layers[-1]))
-    generator.add(LeakyReLU(0.2))
+    layer_in = adaln.AdaInstanceNormalization()(layer_in)
+    layer_in = LeakyReLU(0.2)(layer_in)
     
-    generator.add(Conv2DTranspose(256, kernel_size=(2, 2), strides=(2,2), padding='upscale')) #CHECK IF UPSCALE WORKS
+    layer_in = Conv2DTranspose(256, kernel_size=(2, 2), strides=(2,2), padding='upscale')(layer_in) #CHECK IF UPSCALE WORKS
     #AdaIN
-    generator.add(adaln.AdaInstanceNormalization(generator.layers[-1]))
-    generator.add(LeakyReLU(0.2))
+    layer_in = adaln.AdaInstanceNormalization()(layer_in)
+    layer_in = LeakyReLU(0.2)(layer_in)
     
     ##3 resnet, attention layer, adain, leakyrelu 0.2
     #add ResNet Conv2D Layer, 3x3, stride 1, pad same, 256
-    generator.add(residual_module(generator.layers[-1], 256))
+    layer_in = residual_module(layer_in, 256)
     #AdaIN
-    generator.add(adaln.AdaInstanceNormalization(generator.layers[-1]))
-    generator.add(LeakyReLU(0.2))
+    layer_in = adaln.AdaInstanceNormalization()(layer_in)
+    layer_in = LeakyReLU(0.2)(layer_in)
     
     #Attention Layer at 28x28x256 - No parameters are specified, nor the type of attention layer, so default for now
-    generator.add(Attention())
+    layer_in = Attention()(layer_in)
     
-    generator.add(Conv2DTranspose(256, kernel_size=(2, 2), strides=(2,2), padding='upscale')) #CHECK IF UPSCALE WORKS
+    layer_in = Conv2DTranspose(256, kernel_size=(2, 2), strides=(2,2), padding='upscale')(layer_in) #CHECK IF UPSCALE WORKS
     #AdaIN
-    generator.add(adaln.AdaInstanceNormalization(generator.layers[-1]))
-    generator.add(LeakyReLU(0.2))
+    layer_in = adaln.AdaInstanceNormalization()(layer_in)
+    layer_in = LeakyReLU(0.2)(layer_in)
     
     ##4 resnet, adain, leakyrelu 0.2
     #add ResNet Conv2D Layer, 3x3, stride 1, pad same, 128
-    generator.add(residual_module(generator.layers[-1], 128))
+    layer_in = residual_module(layer_in, 128)
     #AdaIN
-    generator.add(adaln.AdaInstanceNormalization(generator.layers[-1]))
-    generator.add(LeakyReLU(0.2))
+    layer_in = adaln.AdaInstanceNormalization()(layer_in)
+    layer_in = LeakyReLU(0.2)(layer_in)
     
-    generator.add(Conv2DTranspose(128, kernel_size=(2, 2), strides=(2,2), padding='upscale')) #CHECK IF UPSCALE WORKS
+    layer_in = Conv2DTranspose(128, kernel_size=(2, 2), strides=(2,2), padding='upscale')(layer_in) #CHECK IF UPSCALE WORKS
     #AdaIN
-    generator.add(adaln.AdaInstanceNormalization(generator.layers[-1]))
-    generator.add(LeakyReLU(0.2))
+    layer_in = adaln.AdaInstanceNormalization()(layer_in)
+    layer_in = (0.2)(layer_in)
     
     ##5 resnet, adain, leakyrelu 0.2
     #add ResNet Conv2D Layer, 3x3, stride 1, pad same, 64
-    generator.add(residual_module(generator.layers[-1], 64))
+    layer_in = residual_module(layer_in, 64)
     #AdaIN
-    generator.add(adaln.AdaInstanceNormalization(generator.layers[-1]))
-    generator.add(LeakyReLU(0.2))
+    layer_in = adaln.AdaInstanceNormalization()(layer_in)
+    layer_in = LeakyReLU(0.2)(layer_in)
     
     # ConvTranspose2D Layer, 2x2, stride 2, pad upscale, 64, AdaIN, and leakyReLU 0.2
-    generator.add(Conv2DTranspose(64, kernel_size=(2, 2), strides=(2,2), padding='upscale')) #CHECK IF UPSCALE WORKS
+    layer_in = Conv2DTranspose(64, kernel_size=(2, 2), strides=(2,2), padding='upscale')(layer_in) #CHECK IF UPSCALE WORKS
     #AdaIN
-    generator.add(adaln.AdaInstanceNormalization(generator.layers[-1]))
-    generator.add(LeakyReLU(0.2))
+    layer_in = adaln.AdaInstanceNormalization()(layer_in)
+    layer_in = LeakyReLU(0.2)(layer_in)
     
-    generator.add(Conv2D(3, kernel_size=(3, 3), strides=(1,1), padding='same', activation='tanh'))
+    layer_out = Conv2D(3, kernel_size=(3, 3), strides=(1,1), padding='same', activation='tanh')(layer_in)
+    
+    generator = Model(inputs = inputs, outputs = layer_out)
+    
     return generator
 
 
