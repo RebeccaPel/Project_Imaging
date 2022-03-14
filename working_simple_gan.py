@@ -17,6 +17,7 @@ from keras.layers import Flatten
 from keras.layers import Input
 from keras.layers import LeakyReLU
 from keras.layers import Reshape
+from keras.models import Model
 from tensorflow.keras.applications.mobilenet_v2 import preprocess_input
 from tensorflow.keras.callbacks import TensorBoard
 from tensorflow.keras.preprocessing.image import ImageDataGenerator
@@ -69,8 +70,6 @@ def crop(gen, percentage):
 
 crop_train_gen = crop(train_gen, 0.333)
 crop_val_gen = crop(val_gen, 0.333)
-train_set_images = loadPatchCamelyon(r'valid_28.pkl.gz')
-train_set_images = (train_set_images / 255.0).astype(np.float32)  # map pixel values to the [0, 1] range
 
 
 def saveModels(epoch):
@@ -108,34 +107,39 @@ def plotGeneratedImagesPatchCamelyon(epoch, examples=100, dim=(10, 10), figsize=
 
 def get_discriminator_histopathology(
         in_shape=(32, 32, 3)):
-    discriminator = keras.models.Sequential()
-    discriminator.add(Conv2D(64, kernel_size=(3, 3), strides=(2, 2), padding='same', input_shape=in_shape,
-                             kernel_initializer=keras.initializers.RandomNormal(stddev=0.02)))
+    inputs = Input(shape=in_shape)
+    x = Conv2D(64, kernel_size=(3, 3), strides=(2, 2), padding='same', input_shape=in_shape,
+               kernel_initializer=keras.initializers.RandomNormal(stddev=0.02))(inputs)
     # input shape accounts for the three channels
-    discriminator.add(LeakyReLU(0.2))
-    discriminator.add(Conv2D(128, kernel_size=(3, 3), strides=(2, 2), padding='same'))
-    discriminator.add(LeakyReLU(0.2))
-    discriminator.add(Conv2D(128, kernel_size=(3, 3), strides=(2, 2), padding='same'))
-    discriminator.add(LeakyReLU(0.2))
-    discriminator.add(Conv2D(128, kernel_size=(3, 3), strides=(2, 2), padding='same'))
-    discriminator.add(LeakyReLU(0.2))
-    discriminator.add(Flatten())
-    discriminator.add(Dropout(0.3))
-    discriminator.add(Dense(1, activation='sigmoid'))
+    x = LeakyReLU(0.2)(x)
+    x = Conv2D(128, kernel_size=(3, 3), strides=(2, 2), padding='same')(x)
+    x = LeakyReLU(0.2)(x)
+    x = Conv2D(128, kernel_size=(3, 3), strides=(2, 2), padding='same')(x)
+    x = LeakyReLU(0.2)(x)
+    x = Conv2D(256, kernel_size=(3, 3), strides=(2, 2), padding='same')(x)
+    x = LeakyReLU(0.2)(x)
+    x = Conv2D(256, kernel_size=(3, 3), strides=(2, 2), padding='same')(x)
+    x = LeakyReLU(0.2)(x)
+    x = Flatten()(x)
+    x = Dropout(0.3)(x)
+    outputs = Dense(1, activation='sigmoid')(x)
+    discriminator = Model(inputs=inputs, outputs=outputs)
     return discriminator
 
 
 def get_generator_histopathology():
-    generator = keras.models.Sequential()
-    generator.add(
-        Dense(128 * 8 * 8, input_dim=latent_dim, kernel_initializer=keras.initializers.RandomNormal(stddev=0.02)))
-    generator.add(LeakyReLU(0.2))
-    generator.add(Reshape((8, 8, 128)))
-    generator.add(Conv2DTranspose(64, kernel_size=(4, 4), strides=(2, 2), padding='same'))
-    generator.add(LeakyReLU(0.2))
-    generator.add(Conv2DTranspose(64, kernel_size=(4, 4), strides=(2, 2), padding='same'))
-    generator.add(LeakyReLU(0.2))
-    generator.add(Conv2D(3, kernel_size=(3, 3), padding='same', activation='tanh'))  # 3 filters for 3 required channels
+    inputs = Input(shape=(latent_dim,))
+    x = Dense(128 * 4 * 4, kernel_initializer=keras.initializers.RandomNormal(stddev=0.02))(inputs)
+    x = LeakyReLU(0.2)(x)
+    x = Reshape((4, 4, 128))(x)
+    x = Conv2DTranspose(128, kernel_size=(4, 4), strides=(2, 2), padding='same')(x)
+    x = LeakyReLU(0.2)(x)
+    x = Conv2DTranspose(64, kernel_size=(4, 4), strides=(2, 2), padding='same')(x)
+    x = LeakyReLU(0.2)(x)
+    x = Conv2DTranspose(64, kernel_size=(4, 4), strides=(2, 2), padding='same')(x)
+    x = LeakyReLU(0.2)(x)
+    outputs = Conv2D(3, kernel_size=(3, 3), padding='same', activation='tanh')(x)  # 3 filters for 3 channels (rgb)
+    generator = Model(inputs=inputs, outputs=outputs)
     return generator
 
 
@@ -221,11 +225,11 @@ gan.compile(loss='binary_crossentropy', optimizer=tf.keras.optimizers.Adam(lr=0.
 d_losses = []
 g_losses = []
 
-epochs = 200
+epochs = 5
 
 # map pixel values to the [-1, 1] range to be compatible with tanh activation function
 
-batch_count = 144000 // batch_size
+batch_count = 144000 // (batch_size*10)
 for e in range(epochs):
     for b in range(batch_count):
         start_time = time.time()
@@ -308,48 +312,43 @@ def add_noise_2(model):
 
 
 def transfer_classifier(transfer_source):
-    transfer_source.trainable = True
-    model = transfer_source
-    # model.pop()
-    # take the output from the second to last layer of the full model
-    # model.add(layers.Dense(1, activation=activations.softmax))
-    # replace the last layer with a softmax 1-unit dense layer for classification of the mnist set
+    transfer_source.trainable = False
+    inputs = transfer_source.inputs
+    # take the output from the second to last layer of the full model and
+    # replace the last layer with a sigmoid 1-unit dense layer for classification of the PCAM set
+    outputs = Dense(1, activation='sigmoid')(transfer_source.layers[-2].output)
+    model = Model(inputs=inputs, outputs=outputs)
     model.compile(loss="binary_crossentropy", optimizer=tf.keras.optimizers.Adam(lr=0.002, beta_1=0.9, beta_2=0.999),
                   metrics=['accuracy'])
-    add_noise_2(model)
+    #add_noise_2(model)
     return model
 
 
 def classifier():
-    in_shape = (96, 96, 3)
-    model = keras.models.Sequential()
-    model.add(layers.CenterCrop(32, 32))
-    model.add(Conv2D(64, kernel_size=(3, 3), strides=(2, 2), padding='same', input_shape=in_shape,
-                     kernel_initializer=keras.initializers.RandomNormal(stddev=0.02)))
-    # input shape accounts for the three channels
-    model.add(LeakyReLU(0.2))
-    model.add(Conv2D(128, kernel_size=(3, 3), strides=(2, 2), padding='same'))
-    model.add(LeakyReLU(0.2))
-    model.add(Conv2D(128, kernel_size=(3, 3), strides=(2, 2), padding='same'))
-    model.add(LeakyReLU(0.2))
-    model.add(Conv2D(128, kernel_size=(3, 3), strides=(2, 2), padding='same'))
-    model.add(LeakyReLU(0.2))
-    model.add(Flatten())
-    model.add(Dropout(0.3))
-    model.add(Dense(1, activation='sigmoid'))
+    model = get_discriminator_histopathology()
     model.compile(loss="binary_crossentropy", optimizer=tf.keras.optimizers.Adam(lr=0.002, beta_1=0.9, beta_2=0.999),
                   metrics=['accuracy'])
     return model
 
 
-steps = 144000 // 250
+steps = 144000 // batch_size
 transfer = transfer_classifier(discriminator)
 standard = classifier()
 model_name_1 = 'transfer'
 model_name_2 = "standard"
 tensorboard_1 = TensorBoard("logs/" + model_name_1)
 tensorboard_2 = TensorBoard("logs/" + model_name_2)
+# do initial training of the transfer model
 transfer.fit(crop_train_gen, batch_size=128, steps_per_epoch=steps, epochs=3, verbose=1, callbacks=[tensorboard_1])
+# unfreeze the layers of the transfer model and finetune
+for layer in transfer.layers:
+    layer.trainable = True
+transfer.compile(loss="binary_crossentropy", optimizer=tf.keras.optimizers.Adam(lr=0.0002, beta_1=0.9, beta_2=0.999),
+              metrics=['accuracy'])
+transfer.fit(crop_train_gen, batch_size=128, steps_per_epoch=steps, epochs=3, verbose=1, callbacks=[tensorboard_1])
+standard.fit(crop_train_gen, batch_size=128, steps_per_epoch=steps, epochs=3, verbose=1, callbacks=[tensorboard_2])
+standard.compile(loss="binary_crossentropy", optimizer=tf.keras.optimizers.Adam(lr=0.0002, beta_1=0.9, beta_2=0.999),
+              metrics=['accuracy'])
 standard.fit(crop_train_gen, batch_size=128, steps_per_epoch=steps, epochs=3, verbose=1, callbacks=[tensorboard_2])
 transfer.summary()
 standard.summary()
