@@ -8,6 +8,8 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 import tensorflow as tf
+import os
+#os.environ['CUDA_VISIBLE_DEVICES'] = '-1'
 import keras
 
 from functionsGAN import get_pcam_generators, generate_latent_points, combined_model, mapping

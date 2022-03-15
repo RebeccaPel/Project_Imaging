@@ -181,7 +181,7 @@ def get_generator_histopathology(image_size, latent_dim = 300):
     layer_in = LeakyReLU()(layer_in) #Ran with default becasue 0.2 is not specified, default is 0.3
     
     layer_in = Dense(12544, kernel_initializer=keras.initializers.RandomNormal(stddev=0.02))(layer_in)
-    #layer_in = Reshape([12544,1,1])(layer_in)
+    layer_in = Reshape([12544,1,1])(layer_in)
     #AdaIN
     fil = 12544
     layer_in =adaln.adain_block(layer_in, sty, noi[0], fil)
