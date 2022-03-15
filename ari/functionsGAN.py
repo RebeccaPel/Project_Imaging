@@ -168,9 +168,9 @@ def get_generator_histopathology(image_size, latent_dim = 300):
     # layer_in = Reshape([1024,1,1])(layer_in)
     #AdaIN
     #generate the style, beta and gamma
-    sty = Dense(1024, kernel_initializer = 'he_normal')(Input(shape = [latent_dim]))
+    sty = Dense(12544, kernel_initializer = 'he_normal')(Input(shape = [latent_dim]))
     sty = LeakyReLU(0.1)(sty)
-    sty = Dense(1024, kernel_initializer = 'he_normal')(sty)
+    sty = Dense(12544, kernel_initializer = 'he_normal')(sty)
     sty = LeakyReLU(0.1)(sty)
 
     # layer_in =adaln.adain_block(layer_in, sty, 1024, u=False)
@@ -179,7 +179,7 @@ def get_generator_histopathology(image_size, latent_dim = 300):
     layer_in = Dense(12544, kernel_initializer=keras.initializers.RandomNormal(stddev=0.02))(inputs)
     layer_in = Reshape([12544,1,1])(layer_in)
     #AdaIN
-    layer_in =adaln.adain_block(layer_in, sty, 12544)
+    layer_in =adaln.adain_block(layer_in, sty, 12544, 1)
     layer_in = LeakyReLU()(layer_in) #Ran with default becasue 0.2 is not specified, default is 0.3
     
     layer_in = Reshape((256, 7, 7))(layer_in)
@@ -188,7 +188,7 @@ def get_generator_histopathology(image_size, latent_dim = 300):
     #ResNet Conv2D Layer, 3x3, stride 1, pad same, 256
     layer_in = residual_module(layer_in, 256)
     #AdaIN
-    layer_in =adaln.adain_block(layer_in, sty, 256)
+    layer_in =adaln.adain_block(layer_in, sty, 256, 7)
     layer_in = LeakyReLU(0.2)(layer_in)
     
     layer_in = Conv2DTranspose(256, kernel_size=(2, 2), strides=(2,2), padding='upscale')(layer_in) #CHECK IF UPSCALE WORKS
