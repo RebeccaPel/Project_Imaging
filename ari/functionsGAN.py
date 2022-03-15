@@ -164,27 +164,22 @@ def get_generator_histopathology(image_size, latent_dim = 300):
     """
     #generator = keras.models.Sequential()
     inputs = Input(shape = (latent_dim,))
-    layer_in = Dense(1024, kernel_initializer=keras.initializers.RandomNormal(stddev=0.02))(inputs)
-    layer_in = Reshape([1024,1,1])(layer_in)
+    # layer_in = Dense(1024, kernel_initializer=keras.initializers.RandomNormal(stddev=0.02))(inputs)
+    # layer_in = Reshape([1024,1,1])(layer_in)
     #AdaIN
     #generate the style, beta and gamma
-    fil = 1024
-    sty = Dense(fil, kernel_initializer = 'he_normal')(Input(shape = [latent_dim]))
+    sty = Dense(1024, kernel_initializer = 'he_normal')(Input(shape = [latent_dim]))
     sty = LeakyReLU(0.1)(sty)
-    sty = Dense(fil, kernel_initializer = 'he_normal')(sty)
+    sty = Dense(1024, kernel_initializer = 'he_normal')(sty)
     sty = LeakyReLU(0.1)(sty)
 
-    inp_n = Input(shape = (image_size,image_size, 1))
-    noi = [Activation('linear')(inp_n)]
-    layer_in =adaln.adain_block(layer_in, sty, noi[0], fil, u=False)
-
-    layer_in = LeakyReLU()(layer_in) #Ran with default becasue 0.2 is not specified, default is 0.3
+    # layer_in =adaln.adain_block(layer_in, sty, 1024, u=False)
+    # layer_in = LeakyReLU()(layer_in) #Ran with default becasue 0.2 is not specified, default is 0.3
     
-    layer_in = Dense(12544, kernel_initializer=keras.initializers.RandomNormal(stddev=0.02))(layer_in)
+    layer_in = Dense(12544, kernel_initializer=keras.initializers.RandomNormal(stddev=0.02))(inputs)
     layer_in = Reshape([12544,1,1])(layer_in)
     #AdaIN
-    fil = 12544
-    layer_in =adaln.adain_block(layer_in, sty, noi[0], fil)
+    layer_in =adaln.adain_block(layer_in, sty, 12544)
     layer_in = LeakyReLU()(layer_in) #Ran with default becasue 0.2 is not specified, default is 0.3
     
     layer_in = Reshape((256, 7, 7))(layer_in)
@@ -193,41 +188,31 @@ def get_generator_histopathology(image_size, latent_dim = 300):
     #ResNet Conv2D Layer, 3x3, stride 1, pad same, 256
     layer_in = residual_module(layer_in, 256)
     #AdaIN
-    ### necessary step for the adain
-    fil = 256
-    layer_in =adaln.adain_block(layer_in, sty, noi[0], fil)
+    layer_in =adaln.adain_block(layer_in, sty, 256)
     layer_in = LeakyReLU(0.2)(layer_in)
     
     layer_in = Conv2DTranspose(256, kernel_size=(2, 2), strides=(2,2), padding='upscale')(layer_in) #CHECK IF UPSCALE WORKS
     #AdaIN
-    #generate the style, beta and gamma
-    fil = 256
-    layer_in =adaln.adain_block(layer_in, sty, noi[0], fil)
+    layer_in =adaln.adain_block(layer_in, sty, 256)
     layer_in = LeakyReLU(0.2)(layer_in)
     
     ##2 resnet, adain, leakyrelu 0.2
     #add ResNet Conv2D Layer, 3x3, stride 1, pad same, 512
     layer_in = residual_module(layer_in, 512)
     #AdaIN
-    #generate the style, beta and gamma
-    fil = 512
-    layer_in =adaln.adain_block(layer_in, sty, noi[0], fil)
+    layer_in =adaln.adain_block(layer_in, sty, 512)
     layer_in = LeakyReLU(0.2)(layer_in)
     
     layer_in = Conv2DTranspose(256, kernel_size=(2, 2), strides=(2,2), padding='upscale')(layer_in) #CHECK IF UPSCALE WORKS
     #AdaIN
-    #generate the style, beta and gamma
-    fil = 256
-    layer_in =adaln.adain_block(layer_in, sty, noi[0], fil)
+    layer_in =adaln.adain_block(layer_in, sty, 256)
     layer_in = LeakyReLU(0.2)(layer_in)
     
     ##3 resnet, attention layer, adain, leakyrelu 0.2
     #add ResNet Conv2D Layer, 3x3, stride 1, pad same, 256
     layer_in = residual_module(layer_in, 256)
     #AdaIN
-    #generate the style, beta and gamma
-    fil = 256
-    layer_in =adaln.adain_block(layer_in, sty, noi[0], fil)
+    layer_in =adaln.adain_block(layer_in, sty, 256)
     layer_in = LeakyReLU(0.2)(layer_in)
     
     #Attention Layer at 28x28x256 - No parameters are specified, nor the type of attention layer, so default for now
@@ -235,42 +220,32 @@ def get_generator_histopathology(image_size, latent_dim = 300):
     
     layer_in = Conv2DTranspose(256, kernel_size=(2, 2), strides=(2,2), padding='upscale')(layer_in) #CHECK IF UPSCALE WORKS
     #AdaIN
-    #generate the style, beta and gamma
-    fil = 256
-    layer_in =adaln.adain_block(layer_in, sty, noi[0], fil)
+
+    layer_in =adaln.adain_block(layer_in, sty, 256)
     layer_in = LeakyReLU(0.2)(layer_in)
     
     ##4 resnet, adain, leakyrelu 0.2
     #add ResNet Conv2D Layer, 3x3, stride 1, pad same, 128
     layer_in = residual_module(layer_in, 128)
     #AdaIN
-    #generate the style, beta and gamma
-    fil = 128
-    layer_in =adaln.adain_block(layer_in, sty, noi[0], fil)
+    layer_in =adaln.adain_block(layer_in, sty, 128)
     layer_in = LeakyReLU(0.2)(layer_in)
     
     layer_in = Conv2DTranspose(128, kernel_size=(2, 2), strides=(2,2), padding='upscale')(layer_in) #CHECK IF UPSCALE WORKS
     #AdaIN
-    #generate the style, beta and gamma
-    fil = 128
-    layer_in =adaln.adain_block(layer_in, sty, noi[0], fil)
+    layer_in =adaln.adain_block(layer_in, sty, 128)
     layer_in = LeakyReLU(0.2)(layer_in)
     
     ##5 resnet, adain, leakyrelu 0.2
     #add ResNet Conv2D Layer, 3x3, stride 1, pad same, 64
     layer_in = residual_module(layer_in, 64)
     #AdaIN
-    #generate the style, and input noise
-    fil = 64
-    layer_in =adaln.adain_block(layer_in, sty, noi[0], fil)
+    layer_in =adaln.adain_block(layer_in, sty, 64)
     layer_in = LeakyReLU(0.2)(layer_in)
     
     # ConvTranspose2D Layer, 2x2, stride 2, pad upscale, 64, AdaIN, and leakyReLU 0.2
     layer_in = Conv2DTranspose(64, kernel_size=(2, 2), strides=(2,2), padding='upscale')(layer_in) #CHECK IF UPSCALE WORKS
-    #AdaIN
-    #generate the style, beta and gamma
-    fil = 64
-    layer_in =adaln.adain_block(layer_in, sty, noi[0], fil)
+    layer_in =adaln.adain_block(layer_in, sty, 64)
     layer_in = LeakyReLU(0.2)(layer_in)
     
     layer_out = Conv2D(3, kernel_size=(3, 3), strides=(1,1), padding='same', activation='tanh')(layer_in)

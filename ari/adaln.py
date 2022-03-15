@@ -8,40 +8,15 @@ from keras.layers import Layer
 from keras import backend as K
 
 from keras.layers.core import Dense, Reshape
-from keras.layers.advanced_activations import LeakyReLU
-from keras.layers import UpSampling2D, Activation, add
-from keras.layers.convolutional import Conv2D
 
-def adain_block(inp, style, noise, fil, u = True):
+def adain_block(inp, style, fil, u = True):
     
     b = Dense(fil)(style)
     b = Reshape([1, 1, fil])(b)
     g = Dense(fil)(style)
     g = Reshape([1, 1, fil])(g)
 
-    n = Conv2D(filters = fil, kernel_size = 1, padding = 'same', kernel_initializer = 'he_normal')(noise)
-    
-    if u:
-        out = UpSampling2D(interpolation = 'bilinear')(inp)
-        out = Conv2D(filters = fil, kernel_size = 3, padding = 'same', kernel_initializer = 'he_normal')(out)
-    else:
-        out = Activation('linear')(inp)
-    
-    out = AdaInstanceNormalization()([out, b, g])
-    #out = add([out, n])
-    out = LeakyReLU(0.01)(out)
-    
-    b = Dense(fil)(style)
-    b = Reshape([1, 1, fil])(b)
-    g = Dense(fil)(style)
-    g = Reshape([1, 1, fil])(g)
-
-    n = Conv2D(filters = fil, kernel_size = 1, padding = 'same', kernel_initializer = 'he_normal')(noise)
-    
-    out = Conv2D(filters = fil, kernel_size = 3, padding = 'same', kernel_initializer = 'he_normal')(out)
-    out = AdaInstanceNormalization()([out, b, g])
-    #out = add([out, n])
-    out = LeakyReLU(0.01)(out)
+    out = AdaInstanceNormalization()([inp, b, g])
     
     return out
 
