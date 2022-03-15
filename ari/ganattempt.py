@@ -41,7 +41,7 @@ testX = np.expand_dims(testX, axis=-1)
 
 epochs = 1
 latent_dim = 200
-n_samples = 125
+n_samples = 5
 generator_losses = []
 discriminator_losses = []
 batch_count = int(trainX.shape[0] / n_samples)
