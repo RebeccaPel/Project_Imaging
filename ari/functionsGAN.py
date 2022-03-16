@@ -162,10 +162,9 @@ def get_generator_histopathology(image_size, latent_dim = 300):
     Returns:
         The generaot model.
     """
-    #generator = keras.models.Sequential()
     inputs = Input(shape = (latent_dim,))
-    # layer_in = Dense(1024, kernel_initializer=keras.initializers.RandomNormal(stddev=0.02))(inputs)
-    # layer_in = Reshape([1024,1,1])(layer_in)
+    layer_in = Dense(1024, kernel_initializer=keras.initializers.RandomNormal(stddev=0.02))(inputs)
+    layer_in = Reshape([1024,1,1])(layer_in)
     #AdaIN
     #generate the style, beta and gamma
     sty = Dense(12544, kernel_initializer = 'he_normal')(Input(shape = [latent_dim]))
@@ -173,11 +172,11 @@ def get_generator_histopathology(image_size, latent_dim = 300):
     sty = Dense(12544, kernel_initializer = 'he_normal')(sty)
     sty = LeakyReLU(0.1)(sty)
 
-    # layer_in =adaln.adain_block(layer_in, sty, 1024, u=False)
-    # layer_in = LeakyReLU()(layer_in) #Ran with default becasue 0.2 is not specified, default is 0.3
+    layer_in =adaln.adain_block(layer_in, sty, 1024, u=False)
+    layer_in = LeakyReLU()(layer_in) #Ran with default becasue 0.2 is not specified, default is 0.3
     
-    layer_in = Dense(12544, kernel_initializer=keras.initializers.RandomNormal(stddev=0.02))(inputs)
-    layer_in = Reshape([12544,1,1])(layer_in)
+    layer_in = Dense(12544, kernel_initializer=keras.initializers.RandomNormal(stddev=0.02))(layer_in)
+    #layer_in = Reshape([12544,1,1])(layer_in)
     #AdaIN
     layer_in =adaln.adain_block(layer_in, sty, 12544, 1)
     layer_in = LeakyReLU()(layer_in) #Ran with default becasue 0.2 is not specified, default is 0.3
