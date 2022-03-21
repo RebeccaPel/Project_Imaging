@@ -8,7 +8,7 @@ from keras.layers import add, Conv2D, Activation
 
 ## ResNet layer
 
-def residual_module(layer_in, n_filters):
+def residual_module(layer_in, n_filters, layer = 3, stride = 1, padding = 'same'):
     """ 
     Adds a ResNet conv2d 3x3 layer with stride 1 and padding same.
 
@@ -22,11 +22,11 @@ def residual_module(layer_in, n_filters):
     merge_input = layer_in
 	# check if the number of filters needs to be increase, assumes channels last format
     if layer_in.shape[-1] != n_filters:
-        merge_input = Conv2D(n_filters, (1,1), padding='same', activation='relu', kernel_initializer='he_normal')(layer_in)
+        merge_input = Conv2D(n_filters, (1,1), padding=padding, activation='relu', kernel_initializer='he_normal')(layer_in)
 	# conv1
-    conv1 = Conv2D(n_filters, (3,3), padding='same', activation='relu', kernel_initializer='he_normal')(layer_in)
+    conv1 = Conv2D(n_filters, (layer,layer), padding=padding, strides = (stride,stride), activation='relu', kernel_initializer='he_normal')(merge_input)
 	# conv2
-    conv2 = Conv2D(n_filters, (3,3), padding='same', activation='linear', kernel_initializer='he_normal')(conv1)
+    conv2 = Conv2D(n_filters, (layer,layer), padding=padding, strides = (stride,stride), activation='linear', kernel_initializer='he_normal')(conv1)
 	# add filters, assumes filters/channels last
     layer_out = add([conv2, merge_input])
 	# activation function

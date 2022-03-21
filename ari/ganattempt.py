@@ -8,11 +8,11 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 import tensorflow as tf
-import os
-os.environ['CUDA_VISIBLE_DEVICES'] = '-1'
+#import os
+#os.environ['CUDA_VISIBLE_DEVICES'] = '-1'
 import keras
 
-from functionsGAN import get_pcam_generators, generate_latent_points, combined_model, mapping
+from functionsGAN import get_pcam_generators, generate_latent_points, combined_model#, mapping
 
 from keras.layers import Dense, Dropout, Flatten, Conv2D, Input
 from keras.layers.advanced_activations import LeakyReLU, Softmax
@@ -52,9 +52,9 @@ gan, generator, discriminator = combined_model(32, latent_dim)
 for e in range(epochs):
     for b in range(batch_count):
         noise = generate_latent_points(latent_dim, n_samples)
-        w_noise = mapping(noise)
+        #w_noise = mapping(noise)
         image_batch = trainX[np.random.randint(0, trainX.shape[0], size=n_samples)]
-        generated = generator(w_noise)
+        generated = generator(noise)
         X = np.concatenate([image_batch, generated])
         y_dis = np.zeros(2 * n_samples)
         y_dis[:n_samples] = 0.9

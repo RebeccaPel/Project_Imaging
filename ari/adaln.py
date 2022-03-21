@@ -9,7 +9,7 @@ from keras import backend as K
 
 from keras.layers.core import Dense, Reshape
 
-def adain_block(inp, style, fil, shape, u = True):
+def adain_block(inp, style, fil, shape=1, u = True):
     
     b = Dense(fil)(style)
     b = Reshape([shape, shape, fil])(b)
