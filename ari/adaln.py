@@ -9,12 +9,12 @@ from keras import backend as K
 
 from keras.layers.core import Dense, Reshape
 
-def adain_block(inp, style, fil, u = True):
+def adain_block(inp, style, fil, shape=1, u = True):
     
     b = Dense(fil)(style)
-    b = Reshape([1, 1, fil])(b)
+    b = Reshape([shape, shape, fil])(b)
     g = Dense(fil)(style)
-    g = Reshape([1, 1, fil])(g)
+    g = Reshape([shape, shape, fil])(g)
 
     out = AdaInstanceNormalization()([inp, b, g])
     
