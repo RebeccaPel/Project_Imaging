@@ -6,47 +6,22 @@ Created on Mon Mar 21 23:25:50 2022
 """
 
 import numpy as np
-from numpy.random import randn
 import matplotlib.pyplot as plt
 
 import tensorflow as tf
-import os
-from tensorflow.keras.preprocessing.image import ImageDataGenerator
-from tensorflow.keras.applications.mobilenet_v2 import preprocess_input
-from tensorflow.keras.callbacks import TensorBoard
-from tensorflow.keras.initializers import Orthogonal
 
 import keras
-keras.backend.set_image_data_format('channels_first')
-from keras import backend as K
-
-from keras.models import Model
-from keras.layers import Layer, Dense, Dropout, Flatten, Conv2D, Input, Reshape, Attention, Activation, Conv2DTranspose, UpSampling2D, add, LayerNormalization, MultiHeadAttention
-from keras.layers.advanced_activations import LeakyReLU, Softmax
-from keras.callbacks import TensorBoard
-from keras.datasets.mnist import load_data
-
-import pickle
-import gzip
-import numpy as np
-
-import matplotlib.pyplot as plt
-from matplotlib import rc
-from matplotlib import pylab
-from IPython import display
-
-import tensorflow as tf
-import keras
+#keras.backend.set_image_data_format('channels_first')
 keras.backend.set_image_data_format('channels_last')
+from keras.layers import Input
+
+from IPython import display
 
 import time
 import random
-from google.colab import files
-from google.colab import widgets
 random.seed(0)
 
-from utilsGAN import get_pcam_generators, saveModels, plotImagesPatchCamelyon, plotGeneratedImagesPatchCamelyon, crop
-from resnet import ResBlock
+from utilsGAN import get_pcam_generators, saveModels, plotImagesPatchCamelyon, plotGeneratedImagesPatchCamelyon
 from functionsGAN import get_discriminator_histopathology, get_generator_histopathology
 
 # Relevant variables
