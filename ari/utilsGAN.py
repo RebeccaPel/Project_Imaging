@@ -12,35 +12,37 @@ import pickle
 import matplotlib.pyplot as plt
 import numpy as np
 import tensorflow as tf
-from np.random import randn
-
+from numpy.random import randn
+import keras
 from tensorflow.keras.preprocessing.image import ImageDataGenerator
 
 IMAGE_SIZE = 96
 batch_size = 500
 
-def get_pcam_generators(base_dir, train_batch_size=32, val_batch_size=32, IMAGE_SIZE = 96):
+
+def get_pcam_generators(base_dir, train_batch_size=32, val_batch_size=32, IMAGE_SIZE=96):
     # dataset parameters
-     train_path = os.path.join(base_dir,'train+val', 'train')
-     valid_path = os.path.join(base_dir,'train+val', 'valid')
+    train_path = os.path.join(base_dir, 'train+val uncropped', 'train')
+    valid_path = os.path.join(base_dir, 'train+val uncropped', 'valid')
 
-    #Check why it's here and if it's needed
-     RESCALING_FACTOR = 1./255
+    # Check why it's here and if it's needed
+    RESCALING_FACTOR = 1. / 255
 
-     # instantiate data generators
-     datagen = ImageDataGenerator(rescale=RESCALING_FACTOR)
+    # instantiate data generators
+    datagen = ImageDataGenerator(rescale=RESCALING_FACTOR)
 
-     train_gen = datagen.flow_from_directory(train_path,
-                                             target_size=(IMAGE_SIZE, IMAGE_SIZE),
-                                             batch_size=train_batch_size,
-                                             class_mode='binary')
+    train_gen = datagen.flow_from_directory(train_path,
+                                            target_size=(IMAGE_SIZE, IMAGE_SIZE),
+                                            batch_size=train_batch_size,
+                                            class_mode='binary')
 
-     val_gen = datagen.flow_from_directory(valid_path,
-                                             target_size=(IMAGE_SIZE, IMAGE_SIZE),
-                                             batch_size=val_batch_size,
-                                             class_mode='binary')
-     
-     return train_gen, val_gen, datagen
+    val_gen = datagen.flow_from_directory(valid_path,
+                                          target_size=(IMAGE_SIZE, IMAGE_SIZE),
+                                          batch_size=val_batch_size,
+                                          class_mode='binary')
+
+    return train_gen, val_gen
+
 
 def loadPatchCamelyon(path):
     f = gzip.open(path, 'rb')
@@ -55,8 +57,13 @@ def crop(gen, percentage):
 
 
 def saveModels(generator, discriminator, epoch):
-    generator.save('gan_generator_epoch_{}.h5'.format(epoch))
-    discriminator.save('gan_discriminator_epoch_{}.h5'.format(epoch))
+    generator.trainable = True
+    discriminator.trainable = True
+    keras.models.save_model(generator, 'gan_generator_epoch_hope_{}.h5'.format(epoch))
+    keras.models.save_model(discriminator, 'gan_discriminator_epoch_hope_{}.h5'.format(epoch))
+    generator.trainable = False
+    discriminator.trainable = False
+
 
 def plotImagesPatchCamelyon(images, dim=(10, 10), figsize=(10, 10), title=''):
     images = images.astype(np.float32) * 0.5 + 0.5
@@ -68,11 +75,13 @@ def plotImagesPatchCamelyon(images, dim=(10, 10), figsize=(10, 10), title=''):
     plt.tight_layout()
     plt.suptitle(title)
     plt.show()
-    
-def plotGeneratedImagesPatchCamelyon(epoch, generator, discriminator, latent_dim = 200, examples=100, dim=(10, 10), figsize=(10, 10)):
+
+
+def plotGeneratedImagesPatchCamelyon(epoch, generator, discriminator, latent_dim=200, examples=100, dim=(10, 10),
+                                     figsize=(10, 10)):
     noise = np.random.normal(0, 1, size=[examples, latent_dim])
     generatedImages = generator.predict(noise)
-    generatedImages = generatedImages.reshape(examples, 32, 32, 3)
+    generatedImages = generatedImages.reshape(examples, 96, 96, 3)
     generatedImages = generatedImages.astype(np.float32) * 0.5 + 0.5
 
     plt.figure(figsize=figsize)
@@ -83,6 +92,7 @@ def plotGeneratedImagesPatchCamelyon(epoch, generator, discriminator, latent_dim
     plt.tight_layout()
     plt.suptitle('Epoch {}'.format(epoch))
     plt.show()
+
 
 def generate_latent_points(latent_dim, n_samples):
     """

@@ -188,8 +188,8 @@ def crop(gen, percentage):
 def saveModels(epoch):
     generator.trainable = True
     discriminator.trainable = True
-    keras.models.save_model(generator, 'gan_generator_epoch_hope_{}.h5'.format(epoch))
-    keras.models.save_model(discriminator, 'gan_discriminator_epoch_hope_{}.h5'.format(epoch))
+    keras.models.save_model(generator, 'gan_generator_epoch_{}.h5'.format(epoch))
+    keras.models.save_model(discriminator, 'gan_discriminator_epoch_{}.h5'.format(epoch))
     generator.trainable = False
     discriminator.trainable = False
 
@@ -265,7 +265,7 @@ def get_discriminator_histopathology_res(in_shape=(32, 32, 3)):
     x = ResBlockDown([64, 64], kernel_size=(4, 4))(x)
     x = LeakyReLU()(x)
     x = BatchNormalization()(x)
-    # x = ResBlock([64, 64], kernel_size=(4, 4))(x)
+    x = ResBlock([64, 64], kernel_size=(4, 4))(x)
     x = LeakyReLU()(x)
     x = Flatten()(x)
     x = Dropout(0.2)(x)
@@ -276,19 +276,19 @@ def get_discriminator_histopathology_res(in_shape=(32, 32, 3)):
 
 def get_generator_histopathology():
     inputs = Input(shape=(latent_dim,))
-    x = Dense(128 * 4 * 4, kernel_initializer=keras.initializers.RandomNormal(stddev=0.02))(inputs)
+    x = Dense(64 * 4 * 4, kernel_initializer=keras.initializers.RandomNormal(stddev=0.02))(inputs)
     x = LeakyReLU(0.2)(x)
     x = BatchNormalization()(x)
-    x = Reshape((4, 4, 128))(x)
-    x = Conv2DTranspose(128, kernel_size=(4, 4), strides=(2, 2), padding='same')(x)
-    x = LeakyReLU(0.2)(x)
-    x = BatchNormalization()(x)
+    x = Reshape((4, 4, 64))(x)
     x = Conv2DTranspose(64, kernel_size=(4, 4), strides=(2, 2), padding='same')(x)
     x = LeakyReLU(0.2)(x)
     x = BatchNormalization()(x)
-    x = Conv2D(64, kernel_size=(4, 4), padding='same')(x)
+    x = Conv2DTranspose(32, kernel_size=(4, 4), strides=(2, 2), padding='same')(x)
     x = LeakyReLU(0.2)(x)
     x = BatchNormalization()(x)
+    # x = Conv2D(64, kernel_size=(4, 4), padding='same')(x)
+    # x = LeakyReLU(0.2)(x)
+    # x = BatchNormalization()(x)
     outputs = Conv2DTranspose(3, kernel_size=(4, 4), strides=(2, 2), padding='same', activation='tanh')(x)
     generator = Model(inputs=inputs, outputs=outputs)
     return generator
@@ -333,13 +333,13 @@ gan.compile(loss='binary_crossentropy', optimizer=tf.keras.optimizers.Adam(lr=0.
 d_losses = []
 g_losses = []
 batch_times = []
-epochs = 200
+epochs = 500
 train_gen, val_gen = get_pcam_generators(r'C:\Users\justi\PycharmProjects\pythonProject')
 val_gen_crop = crop(val_gen, 0.33333)
 # map pixel values to the [-1, 1] range to be compatible with tanh activation function
 generator.summary()
 discriminator.summary()
-batch_count = 144000 // batch_size
+batch_count = 144000 // batch_size // 10
 for e in range(epochs):
     for b in range(batch_count):
         start_time = time.time()
@@ -357,7 +357,7 @@ for e in range(epochs):
         # Labels for generated and real data
         y_dis = np.zeros(2 * batch_size)
         # Set reference to 1 for real samples
-        y_dis[:batch_size] = 0.9
+        y_dis[:batch_size] = 1
 
         # Train discriminator with this batch of samples
         discriminator.trainable = True

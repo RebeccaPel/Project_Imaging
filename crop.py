@@ -5,6 +5,7 @@
 # ..\train+val\train\0 for example)
 # 3. USE THE COMMAND: python
 # 4. COPY THE CODE BELOW AND RUN IT
+# this will permanently crop the 96x96 images down to 32x32
 
 from PIL import Image
 import os
