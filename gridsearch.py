@@ -149,7 +149,7 @@ def loadPatchCamelyon(path):
 
 
 init = initializers.get("glorot_uniform")
-discriminator = keras.models.load_model(r"C:\Users\Ari\Desktop\TUE\Project_Imaging\gan_discriminator_epoch_lower_lr145.h5",
+discriminator = keras.models.load_model(r".\gan_discriminator_epoch_lower_lr145.h5",
                                custom_objects={'MinibatchDiscrimination': MinibatchDiscrimination,
                                                'GlorotUniform': init})
 input_shape = (IMAGE_SIZE, IMAGE_SIZE, 3)
@@ -229,16 +229,9 @@ learn_rate = [0.0001, 0.0005, 0.001]
 epochs = [10,50,100]
 param_grid = dict(learn_rate=learn_rate, epochs=epochs)
 
-
-seed = 7
-np.random.seed(seed)
-
-
 model = KerasClassifier(build_fn=transfer_classifier(discriminator), verbose=0)
 
 # define the grid search parameters
-
-
 grid = GridSearchCV(estimator=model, param_grid=param_grid, n_jobs=-1, cv=3)
 grid_result = grid.fit(trainX, trainy)
 
