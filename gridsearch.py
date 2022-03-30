@@ -229,16 +229,9 @@ learn_rate = [0.0001, 0.0005, 0.001]
 epochs = [10,50,100]
 param_grid = dict(learn_rate=learn_rate, epochs=epochs)
 
-
-seed = 7
-np.random.seed(seed)
-
-
 model = KerasClassifier(build_fn=transfer_classifier(discriminator), verbose=0)
 
 # define the grid search parameters
-
-
 grid = GridSearchCV(estimator=model, param_grid=param_grid, n_jobs=-1, cv=3)
 grid_result = grid.fit(trainX, trainy)
 
