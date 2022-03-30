@@ -149,7 +149,7 @@ def loadPatchCamelyon(path):
 
 
 init = initializers.get("glorot_uniform")
-discriminator = keras.models.load_model(r"C:\Users\Ari\Desktop\TUE\Project_Imaging\gan_discriminator_epoch_lower_lr145.h5",
+discriminator = keras.models.load_model(r".\gan_discriminator_epoch_lower_lr145.h5",
                                custom_objects={'MinibatchDiscrimination': MinibatchDiscrimination,
                                                'GlorotUniform': init})
 input_shape = (IMAGE_SIZE, IMAGE_SIZE, 3)
