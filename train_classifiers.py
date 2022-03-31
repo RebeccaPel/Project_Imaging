@@ -1,5 +1,5 @@
-# Make sure to change the paths!
-
+# To run, change the paths and the subsample factor and run the file.
+# At the end .h5 files will be created with the trained models.
 from transfer import *
 
 image_size = (32, 32)

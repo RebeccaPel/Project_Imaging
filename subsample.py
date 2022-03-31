@@ -1,3 +1,5 @@
+# To run, change the paths and the subsample factor and run the file!
+# This will create directories as necessary containing your subsampled data.
 import os
 import random
 import shutil
