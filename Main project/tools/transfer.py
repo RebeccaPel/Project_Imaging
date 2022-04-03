@@ -1,18 +1,8 @@
-"""
-Functions necessary for transfer learning. Includes:
-    - transfer_classifier -> creates a classifier with transfered weights
-    - classifier -> creates a classifier from a source model without transfered weights
-    - pre_trained -> constructs a pre-trained and compiled mobilenetV2 classifier with imagenet weights
-
-@author: N. Hartog, J. Kleinveld, A. Masot, R. Pelsser
-"""
-
-import keras
-from keras import Model
-from keras.layers import Conv2D, LeakyReLU, Flatten, Dropout, Dense, Input
 from keras.applications.densenet import DenseNet121
 from keras.layers import GlobalAveragePooling2D
-import tensorflow as tf
+
+from working_simple_gan import *
+
 
 def transfer_classifier(transfer_source, lr=0.0005):
     """
@@ -29,11 +19,13 @@ def transfer_classifier(transfer_source, lr=0.0005):
     # take the output from the second to last layer of the full model and
     # replace the last layers with a sigmoid 1-unit dense layer for classification of the PCAM set
     # -5 means the last convolution layer.
-    x = Conv2D(256, kernel_size=(3, 3), strides=(2, 2), name='convo', padding="same")(transfer_source.layers[-7].output)
+    x = Conv2D(256, kernel_size=(3, 3), strides=(2, 2), name='convo', padding="same", kernel_regularizer='l1_l2')(
+        transfer_source.layers[-7].output)
+    x = BatchNormalization()(x)
     x = LeakyReLU(name='leaky')(x)
     x = Flatten()(x)
     x = Dropout(0.5)(x)
-    outputs = Dense(1, activation='sigmoid')(x)
+    outputs = Dense(1, activation='sigmoid', kernel_regularizer='l1_l2')(x)
     model = Model(inputs=inputs, outputs=outputs)
     for i in model.layers[-7:]:
         i.trainable = True
@@ -55,13 +47,15 @@ def classifier(model_source, lr=0.0005):
     # clone_model() re-initializes the weights.
     model_source = keras.models.clone_model(model_source)
     inputs = model_source.inputs
-    x = Dropout(0.5)(model_source.layers[-4].output)
-    outputs = Dense(1, activation='sigmoid')(x)
+    x = BatchNormalization()(model_source.layers[-4].output)
+    x = Dropout(0.5)(x)
+    outputs = Dense(1, activation='sigmoid', kernel_regularizer='l1_l2')(x)
     model = Model(inputs=inputs, outputs=outputs)
     model.trainable = True
     model.compile(loss="binary_crossentropy",
                   optimizer=tf.keras.optimizers.Adam(lr=lr, beta_1=0.9, beta_2=0.999), metrics=['accuracy'])
     return model
+
 
 def pre_trained(lr=0.0005):
     """
@@ -73,8 +67,8 @@ def pre_trained(lr=0.0005):
         model: the compiled model
 
     """
-    input = Input((32,32,3))
-    model = DenseNet121(input_shape=(32,32,3), include_top=False, weights="imagenet")
+    input = Input((32, 32, 3))
+    model = DenseNet121(input_shape=(32, 32, 3), include_top=False, weights="imagenet")
     model = model(input)
     model = GlobalAveragePooling2D()(model)
     model = Dropout(0.5)(model)
