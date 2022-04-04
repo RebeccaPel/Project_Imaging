@@ -24,12 +24,12 @@ from utils import get_pcam_generators
 
 
 image_size = (32, 32)
-batch_size = 128
-epochs = 2
-steps = 144000 // batch_size
+batch_size = 256
+epochs = 20
+steps = 72000 // batch_size
 val_steps = 16000 // batch_size
 # Change this to whatever you're doing, it will automatically change the filenames that it saves to
-subsample_factor = 75
+subsample_factor = 50
 model_name_1 = 'transfer'
 model_name_2 = 'standard'
 model_name_3 = 'densenet'
@@ -41,7 +41,7 @@ discriminator = keras.models.load_model('models/gan_discriminator_epoch_Upsampli
                                         custom_objects={'MinibatchDiscrimination': MinibatchDiscrimination,
                                                         'GlorotUniform': init})
 # change this path to where you have the SUBSAMPLED dataset
-train_gen, val_gen = get_pcam_generators(r'C:\Users\justi\PycharmProjects\pythonProject\train+val',
+train_gen, val_gen = get_pcam_generators(r'C:\Users\justi\PycharmProjects\pythonProject\train+val_sub_50',
                                          image_size, batch_size, batch_size)
 transfer = transfer_classifier(discriminator)
 standard = classifier(discriminator)
@@ -53,24 +53,33 @@ tensorboard_3 = TensorBoard("logs/" + model_name_3)
 # do initial training of the transfer model
 print("training")
 print("transfer")
-transfer.fit(train_gen, batch_size=batch_size, steps_per_epoch=steps, epochs=epochs//2, verbose=1, callbacks=[tensorboard_1], validation_data=val_gen)
+transfer.fit(train_gen, batch_size=batch_size, steps_per_epoch=steps, epochs=epochs//2, verbose=1,
+             callbacks=[tensorboard_1], validation_data=val_gen)
 # unfreeze the layers of the transfer model and finetune
 transfer.trainable = True
-transfer.compile(loss="binary_crossentropy", optimizer=tf.keras.optimizers.Adam(learning_rate=0.00005, beta_1=0.9, beta_2=0.999),
+transfer.compile(loss="binary_crossentropy",
+                 optimizer=tf.keras.optimizers.Adam(learning_rate=0.00005, beta_1=0.9, beta_2=0.999),
                  metrics=['accuracy'])
-transfer.fit(train_gen, batch_size=batch_size, steps_per_epoch=steps, epochs=epochs//2, verbose=1, callbacks=[tensorboard_1], validation_data=val_gen)
+transfer.fit(train_gen, batch_size=batch_size, steps_per_epoch=steps, epochs=epochs//2, verbose=1,
+             callbacks=[tensorboard_1], validation_data=val_gen)
 
 print("standard")
-standard.fit(train_gen, batch_size=batch_size, steps_per_epoch=steps, epochs=epochs//2, verbose=1, callbacks=[tensorboard_2], validation_data=val_gen)
-standard.compile(loss="binary_crossentropy", optimizer=tf.keras.optimizers.Adam(learning_rate=0.00005, beta_1=0.9, beta_2=0.999),
+standard.fit(train_gen, batch_size=batch_size, steps_per_epoch=steps, epochs=epochs//2, verbose=1,
+             callbacks=[tensorboard_2], validation_data=val_gen)
+standard.compile(loss="binary_crossentropy",
+                 optimizer=tf.keras.optimizers.Adam(learning_rate=0.00005, beta_1=0.9, beta_2=0.999),
                  metrics=['accuracy'])
-standard.fit(train_gen, batch_size=batch_size, steps_per_epoch=steps, epochs=epochs//2, verbose=1, callbacks=[tensorboard_2], validation_data=val_gen)
+standard.fit(train_gen, batch_size=batch_size, steps_per_epoch=steps, epochs=epochs//2, verbose=1,
+             callbacks=[tensorboard_2], validation_data=val_gen)
 
 print("pre_trained")
-pre_trained.fit(train_gen, batch_size=batch_size, steps_per_epoch=steps, epochs=epochs//2, verbose=1, callbacks=[tensorboard_3], validation_data=val_gen)
-pre_trained.compile(loss="binary_crossentropy", optimizer=tf.keras.optimizers.Adam(learning_rate=0.00005, beta_1=0.9, beta_2=0.999),
-                 metrics=['accuracy'])
-pre_trained.fit(train_gen, batch_size=batch_size, steps_per_epoch=steps, epochs=epochs//2, verbose=1, callbacks=[tensorboard_3], validation_data=val_gen)
+pre_trained.fit(train_gen, batch_size=batch_size, steps_per_epoch=steps, epochs=epochs//2, verbose=1,
+                callbacks=[tensorboard_3], validation_data=val_gen)
+pre_trained.compile(loss="binary_crossentropy",
+                    optimizer=tf.keras.optimizers.Adam(learning_rate=0.00005, beta_1=0.9, beta_2=0.999),
+                    metrics=['accuracy'])
+pre_trained.fit(train_gen, batch_size=batch_size, steps_per_epoch=steps, epochs=epochs//2, verbose=1,
+                callbacks=[tensorboard_3], validation_data=val_gen)
 
 print("evaluating")
 print("transfer")
