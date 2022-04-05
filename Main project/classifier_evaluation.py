@@ -11,7 +11,7 @@ from sklearn.metrics import confusion_matrix, roc_curve, accuracy_score, auc
 import matplotlib as plt
 
 import sys
-sys.append("tools")
+sys.path.append("tools")
 
 from utils import get_pcam_generators
 from custom_layers import MinibatchDiscrimination
