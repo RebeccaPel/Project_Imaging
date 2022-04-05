@@ -5,10 +5,11 @@ image_size = (32, 32)
 batch_size = 128
 # load the classifier
 init = initializers.get("glorot_uniform")
-standard = keras.models.load_model('regular_classifer.h5',
+standard = keras.models.load_model(r'C:\Users\justi\Documents\Project_Imaging\Main '
+                                   r'project\models\regular_classifer_50%.h5',
                                    custom_objects={'MinibatchDiscrimination': MinibatchDiscrimination,
                                                    'GlorotUniform': init})
-transfer = keras.models.load_model('transfer_classifier.h5',
+transfer = keras.models.load_model(r'C:\Users\justi\Documents\Project_Imaging\Main project\models\transfer_classifier_50%.h5',
                                    custom_objects={'MinibatchDiscrimination': MinibatchDiscrimination,
                                                    'GlorotUniform': init})
 train_gen, val_gen = get_pcam_generators(r'C:\Users\justi\PycharmProjects\pythonProject\train+val',

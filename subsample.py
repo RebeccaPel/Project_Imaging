@@ -4,8 +4,8 @@ import os
 import random
 import shutil
 # change these as necessary
-original_path = r"D:\Ari\Uni\TUE\8P361\train+val\train"
-subsampled_path = r"D:\Ari\Uni\TUE\8P361\train+val_sub_75\train"
+original_path = r'C:\Users\justi\PycharmProjects\pythonProject\train+val\train'
+subsampled_path = r'C:\Users\justi\PycharmProjects\pythonProject\train+val_sub_75'
 # change this to whatever you want
 subsample_factor = 0.75
 try:
@@ -23,8 +23,3 @@ for file in sample_0:
     shutil.copy2(original_path + r'\0\\' + file, subsampled_path + r'\0')
 for file in sample_1:
     shutil.copy2(original_path + r'\1\\' + file, subsampled_path + r'\1')
-
-
-
-
-

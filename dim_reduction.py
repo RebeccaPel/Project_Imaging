@@ -9,6 +9,7 @@ from keras import initializers, regularizers, constraints
 import tensorflow as tf
 import matplotlib.pyplot as plt
 from math import *
+
 tf.compat.v1.logging.set_verbosity(tf.compat.v1.logging.ERROR)
 import numpy as np
 import sklearn.decomposition as decomp
@@ -174,11 +175,12 @@ def get_order(weights):
     return pca_ordering
 
 
-def plot_images_ordered(images, order, dim=[8, 8], figsize=[8, 8]):
+def plot_images_ordered(images, title, order, dim=[8, 8], figsize=[8, 8]):
     """
     plots images in a given order.
     Args:
         images: images to be plotted
+        title: title to be displayed above the plots
         order: the order to plot the images in, array.
         dim: tuple containing the dimensions for the image grid
         figsize: tuple containing width, height of the grid in inches
@@ -187,6 +189,7 @@ def plot_images_ordered(images, order, dim=[8, 8], figsize=[8, 8]):
 
     """
     plt.figure(figsize=figsize)
+    plt.suptitle(title)
     for i, num in enumerate(order):
         plt.subplot(dim[0], dim[1], i + 1)
         plt.imshow(images[:, :, :, num])
@@ -195,17 +198,19 @@ def plot_images_ordered(images, order, dim=[8, 8], figsize=[8, 8]):
     plt.show()
 
 
-def plot_images(images, dim=(5, 5), figsize=(5, 5)):
+def plot_images(images, title, dim=(5, 5), figsize=(5, 5)):
     """
     plots images in a grid
     Args:
         images: images to be plotted
+        title: title to be displayed above the plots
         dim: tuple containing the dimensions for the image grid
         figsize: tuple containing width, height of the grid in inches
 
     Returns: None
     """
     plt.figure(figsize=figsize)
+    plt.suptitle(title)
     for i in range(images.shape[0]):
         plt.subplot(dim[0], dim[1], i + 1)
         plt.imshow(images[i])
@@ -255,7 +260,7 @@ def preprocess_images(images):
     return images
 
 
-def visualize_first_layer_weights(model):
+def visualize_first_layer_weights(model, title):
     """
     Visualizes the weights of the first convolutional layer of a model, ordered by the first PCA component of the
     second convolutional layer.
@@ -267,10 +272,10 @@ def visualize_first_layer_weights(model):
     first_layer_weights, second_layer_weights = get_weights(model, 0)
     images = preprocess_images(first_layer_weights)
     order = get_order(second_layer_weights)
-    plot_images_ordered(images, order)
+    plot_images_ordered(images, title, order)
 
 
-def visualize_layer_weights(layer, n_images, model):
+def visualize_layer_weights(layer, n_images, model, title):
     """
     Visualizes layer weights for any arbitrary layer by performing dimensionality reduction on them beforehand.
     Dimensionality reduction is done through one-sided NMF.
@@ -282,11 +287,10 @@ def visualize_layer_weights(layer, n_images, model):
     Returns:
 
     """
-    nmf = decomp.NMF(3, init='nndsvd')
+    nmf = decomp.NMF(3, init='nndsvd', max_iter=20000)
     w_2, _ = get_weights(model, layer)
     # concatenation hack to make the matrices positive so one sided nmf can be used
     w_2 = np.concatenate([np.maximum(0, w_2), np.maximum(0, -w_2)], axis=2)
-    print(w_2.shape)
     w_2 = np.reshape(w_2, (9, w_2.shape[2], w_2.shape[3]))
     images = np.zeros((n_images, 3, 3, 3))
     root = ceil(np.sqrt(n_images))
@@ -297,21 +301,23 @@ def visualize_layer_weights(layer, n_images, model):
         image = np.reshape(w_nmf, (3, 3, 3))
         images[i] = image
     images = preprocess_images(images)
-    plot_images(images, dim=dim, figsize=figsize)
+    plot_images(images, title, dim=dim, figsize=figsize)
 
 
 # load the models
 init = initializers.get("glorot_uniform")
-disc = keras.models.load_model('logs/old models/gan_discriminator_epoch_lower_lr145.h5',
-                               custom_objects={'MinibatchDiscrimination': MinibatchDiscrimination,
-                                               'GlorotUniform': init})
-classifier = keras.models.load_model('regular_classifer.h5',
+disc = keras.models.load_model(r'C:\Users\justi\Documents\Project_Imaging\Main '
+                               r'project\models\transfer_classifier_100%.h5',
+                                   custom_objects={'MinibatchDiscrimination': MinibatchDiscrimination,
+                                                   'GlorotUniform': init})
+classifier = keras.models.load_model(r'C:\Users\justi\Documents\Project_Imaging\Main '
+                                     r'project\models\regular_classifer_100%.h5',
                                      custom_objects={'MinibatchDiscrimination': MinibatchDiscrimination,
                                                      'GlorotUniform': init})
 
-visualize_first_layer_weights(disc)
-visualize_first_layer_weights(classifier)
-visualize_layer_weights(0, 64, disc)
-visualize_layer_weights(0, 64, classifier)
-visualize_layer_weights(3, 64, disc)
-visualize_layer_weights(3, 64, classifier)
+visualize_first_layer_weights(disc, 'Transfer')
+visualize_first_layer_weights(classifier, 'Standard')
+visualize_layer_weights(1, 16, disc, "Transfer NMF second layer")
+visualize_layer_weights(1, 16, classifier, "Standard NMF second layer")
+visualize_layer_weights(3, 16, disc, "Transfer NMF fourth layer")
+visualize_layer_weights(3, 16, classifier, "Transfer NMF fourth layer")

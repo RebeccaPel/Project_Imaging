@@ -1,4 +1,4 @@
-from keras.applications.densenet import DenseNet121
+from keras.applications.densenet import EfficientNetB0
 from keras.layers import GlobalAveragePooling2D
 
 from working_simple_gan import *
@@ -68,7 +68,11 @@ def pre_trained(lr=0.0005):
 
     """
     input = Input((32, 32, 3))
-    model = DenseNet121(input_shape=(32, 32, 3), include_top=False, weights="imagenet")
+    model = EfficientNetB0(input_shape=(32, 32, 3), include_top=False, weights="imagenet")
+    batchnorm_indices = [i for i, layer in enumerate(model.layers) if isinstance(layer, BatchNormalization)]
+    for i in batchnorm_indices:
+        model.layers[i].trainable = True
+    model.trainable = False
     model = model(input)
     model = GlobalAveragePooling2D()(model)
     model = Dropout(0.5)(model)
