@@ -37,7 +37,7 @@ model_name_3 = 'efficientnet'
 # load the discriminator from the GAN
 init = initializers.get("glorot_uniform")
 # This should be the path to your saved discriminator file.
-discriminator = keras.models.load_model('gan_discriminator_epoch_Upsampling_190.h5',
+discriminator = keras.models.load_model('models/gan_discriminator_epoch_Upsampling_190.h5',
                                         custom_objects={'MinibatchDiscrimination': MinibatchDiscrimination,
                                                         'GlorotUniform': init})
 # change this path to where you have the SUBSAMPLED dataset

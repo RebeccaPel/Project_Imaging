@@ -1,4 +1,4 @@
-from working_simple_gan import *
+from GAN import *
 image_size = (32,32)
 batch_size = 128
 latent_dim = 500

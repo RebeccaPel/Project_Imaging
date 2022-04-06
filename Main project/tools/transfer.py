@@ -1,7 +1,7 @@
 from keras.applications.densenet import EfficientNetB0
 from keras.layers import GlobalAveragePooling2D
 
-from working_simple_gan import *
+from GAN import *
 
 
 def transfer_classifier(transfer_source, lr=0.0005):

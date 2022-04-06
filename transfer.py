@@ -1,5 +1,5 @@
 from keras.callbacks import TensorBoard
-from working_simple_gan import *
+from GAN import *
 from sklearn.metrics import confusion_matrix
 from keras.applications.densenet import DenseNet121
 from keras.layers import GlobalAveragePooling2D

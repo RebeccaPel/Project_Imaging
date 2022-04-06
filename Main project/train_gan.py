@@ -9,7 +9,7 @@ will be saved in the models folder.
 
 import sys
 sys.append("tools")
-from working_simple_gan import get_gan, train_gan
+from GAN import get_gan, train_gan
 from utils import get_pcam_generators
 
 image_size = (32,32)
