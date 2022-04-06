@@ -5,7 +5,7 @@ Author: Suzanne Wetstein
 '''
 
 import os
-os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'  # or any {'0', '1', '2'}   
+#os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'  # or any {'0', '1', '2'}
 
 import numpy as np
 
@@ -21,7 +21,7 @@ sys.path.append("tools")
 from custom_layers import MinibatchDiscrimination
 
 #Change these variables to point at the locations and names of the test dataset and your models.
-TEST_PATH = r'D:\Ari\Uni\TUE\8P361/test/' 
+TEST_PATH = r'C:\Users\justi\PycharmProjects\pythonProject\test/'
 model_path = 'models'
 # load the classifier
 init = initializers.get("glorot_uniform")
@@ -36,7 +36,6 @@ submission = pd.DataFrame()
 
 file_batch = 5000
 max_idx = len(test_files)
-
 files = os.listdir(model_path)
 
 for file in files:

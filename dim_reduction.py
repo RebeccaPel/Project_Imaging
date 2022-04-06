@@ -314,7 +314,6 @@ classifier = keras.models.load_model(r'C:\Users\justi\Documents\Project_Imaging\
                                      r'project\models\regular_classifer_100%.h5',
                                      custom_objects={'MinibatchDiscrimination': MinibatchDiscrimination,
                                                      'GlorotUniform': init})
-
 visualize_first_layer_weights(disc, 'Transfer')
 visualize_first_layer_weights(classifier, 'Standard')
 visualize_layer_weights(1, 16, disc, "Transfer NMF second layer")
