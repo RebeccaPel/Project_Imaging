@@ -36,8 +36,9 @@ submission = pd.DataFrame()
 
 file_batch = 5000
 max_idx = len(test_files)
+print(max_idx)
 files = os.listdir(model_path)
-
+print(files)
 for file in files:
     model = keras.models.load_model(os.path.join('models',file),
                                    custom_objects={'MinibatchDiscrimination': MinibatchDiscrimination,
@@ -67,6 +68,8 @@ for file in files:
 
     # save your submission
     submission.head()
+    print(len(submission))
     submission.to_csv('submission_'+file[:-4]+'.csv', index = False, header = True)
+    submission = pd.DataFrame()
 
 
