@@ -1,3 +1,10 @@
+"""
+Code to generate a submission to the Kaggle PCAM,
+as provided in TU/e BME Project Imaging 2021.
+
+@author: Suzanne Wetstein
+"""
+
 '''
 TU/e BME Project Imaging 2021
 Submission code for Kaggle PCAM
@@ -25,9 +32,6 @@ TEST_PATH = r'C:\Users\justi\PycharmProjects\pythonProject\test/'
 model_path = 'models'
 # load the classifier
 init = initializers.get("glorot_uniform")
-
-#Done
-# densenet_classifer_50%
 
 # open the test set in batches (as it is a very big dataset) and make predictions
 test_files = glob.glob(TEST_PATH + '*.tif')

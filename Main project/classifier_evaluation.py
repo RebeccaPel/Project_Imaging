@@ -5,10 +5,13 @@ for each, the accuracy, the ROC curve, AUC and confusion matrix.
 @author: N. Hartog, J. Kleinveld, A. Masot, R. Pelsser
 """
 from sklearn.metrics import confusion_matrix, roc_curve, accuracy_score, auc
-from transfer import *
+
 import os
 import sys
-sys.path.append("models")
+sys.path.append("tools")
+from transfer import *
+from dim_reduction import *
+
 image_size = (32, 32)
 batch_size = 128
 # load the classifier
@@ -93,3 +96,18 @@ for i in range(4):
     print("AUC: {}".format(efficient_auc))
     print("confusion matrix")
     print(efficient_conf)
+    
+# Generation of the weights for the discriminator and the classifier
+init = initializers.get("glorot_uniform")
+disc = keras.models.load_model(r'/models/transfer_classifier_100%.h5',
+                               custom_objects={'MinibatchDiscrimination': MinibatchDiscrimination,
+                                                   'GlorotUniform': init})
+classifier = keras.models.load_model(r'/models/regular_classifer_100%.h5',
+                                     custom_objects={'MinibatchDiscrimination': MinibatchDiscrimination,
+                                                     'GlorotUniform': init})
+visualize_first_layer_weights(disc, 'Transfer')
+visualize_first_layer_weights(classifier, 'Standard')
+visualize_layer_weights(1, 16, disc, "Transfer NMF second layer")
+visualize_layer_weights(1, 16, classifier, "Standard NMF second layer")
+visualize_layer_weights(3, 16, disc, "Transfer NMF fourth layer")
+visualize_layer_weights(3, 16, classifier, "Transfer NMF fourth layer")
