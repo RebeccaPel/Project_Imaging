@@ -1,22 +1,30 @@
 """
 Code for evaluation of the classifiers. Loads the three trained classifiers and all subsampled variations and calculates,
-for each, the accuracy, the ROC curve, AUC and confusion matrix.
+for each, the accuracy, the ROC curve, AUC and confusion matrix. Also creates visualizations of the layer weights.
 
 @author: N. Hartog, J. Kleinveld, A. Masot, R. Pelsser
 """
+import keras
 from sklearn.metrics import confusion_matrix, roc_curve, accuracy_score, auc
-
+from keras.initializers import get
 import os
+import numpy as np
+import matplotlib.pyplot as plt
 import sys
 sys.path.append("tools")
-from transfer import *
-from dim_reduction import *
+from utils import get_pcam_generators
+from custom_layers import MinibatchDiscrimination
+from dim_reduction import visualize_first_layer_weights, visualize_layer_weights
 
+# Input the path to the "Main Project" folder here
+base_path = r"C:\Users\justi\Documents\Project_Imaging\Main project"
+# Input the path to the train+val folder of the dataset here
+data_path = r'C:\Users\justi\PycharmProjects\pythonProject\train+val'
 image_size = (32, 32)
 batch_size = 128
 # load the classifier
-init = initializers.get("glorot_uniform")
-train_gen, val_gen = get_pcam_generators(r'C:\Users\justi\PycharmProjects\pythonProject\train+val',
+init = get("glorot_uniform")
+train_gen, val_gen = get_pcam_generators(data_path,
                                          image_size, batch_size, batch_size)
 # the generator doesn't work properly for evaluating performance with sklearn so we remove the data
 # from the generator object
@@ -30,20 +38,23 @@ labels = np.array(labels)
 images = np.reshape(images, (16000, 32, 32, 3))
 labels = np.reshape(labels, (16000,))
 
-files = os.listdir(r"C:\Users\justi\Documents\Project_Imaging\Main project\models")
+files = os.listdir(base_path + "\models")
+files.remove('gan_discriminator_epoch_Upsampling_190.h5')
+files.remove('gan_generator_epoch_Upsampling_190.h5')
 for i in range(4):
-    for j in range(i,12,4):
+    for j in range(i, 12, 4):
         model = files[j]
+        print(model)
         if model[0:12] == "efficientnet":
-            efficient = keras.models.load_model(r'Main project/models/' + model,
+            efficient = keras.models.load_model(base_path + r'\\models\\' + model,
                                                 custom_objects={'MinibatchDiscrimination': MinibatchDiscrimination,
                                                                 'GlorotUniform': init})
         if model[0:7] == "regular":
-            standard = keras.models.load_model(r'Main project/models/' + model,
+            standard = keras.models.load_model(base_path + r'\\models\\' + model,
                                                 custom_objects={'MinibatchDiscrimination': MinibatchDiscrimination,
                                                                 'GlorotUniform': init})
         if model[0:8] == "transfer":
-            transfer = keras.models.load_model(r'Main project/models/' + model,
+            transfer = keras.models.load_model(base_path + r'\\models\\' + model,
                                                 custom_objects={'MinibatchDiscrimination': MinibatchDiscrimination,
                                                                 'GlorotUniform': init})
     percentage = model.split("_")[2][:-3]
@@ -98,11 +109,11 @@ for i in range(4):
     print(efficient_conf)
     
 # Generation of the weights for the discriminator and the classifier
-init = initializers.get("glorot_uniform")
-disc = keras.models.load_model(r'/models/transfer_classifier_100%.h5',
+init = get("glorot_uniform")
+disc = keras.models.load_model(base_path + r'/models/transfer_classifier_100%.h5',
                                custom_objects={'MinibatchDiscrimination': MinibatchDiscrimination,
                                                    'GlorotUniform': init})
-classifier = keras.models.load_model(r'/models/regular_classifer_100%.h5',
+classifier = keras.models.load_model(base_path+ r'/models/regular_classifer_100%.h5',
                                      custom_objects={'MinibatchDiscrimination': MinibatchDiscrimination,
                                                      'GlorotUniform': init})
 visualize_first_layer_weights(disc, 'Transfer')
@@ -110,4 +121,4 @@ visualize_first_layer_weights(classifier, 'Standard')
 visualize_layer_weights(1, 16, disc, "Transfer NMF second layer")
 visualize_layer_weights(1, 16, classifier, "Standard NMF second layer")
 visualize_layer_weights(3, 16, disc, "Transfer NMF fourth layer")
-visualize_layer_weights(3, 16, classifier, "Transfer NMF fourth layer")
+visualize_layer_weights(3, 16, classifier, "Standard NMF fourth layer")
