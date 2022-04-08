@@ -8,7 +8,7 @@ Overview of the folders and their contents:
 
 * **Assignments code**: This is where the code for the assignments can be found, dividded in subfolders for each assignment
 
-* **logs**: folder for the logs of the assignment models to be located when run.
+* **logs**: folder for the logs of the assignment models to be located when run
 
 * **Main project**: the code for the main project, divided in
     *  **Kaggle submissions**: containing the .csv for kaggle submission for each trained model
