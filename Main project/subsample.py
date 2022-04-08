@@ -10,8 +10,9 @@ be created during execution and the selected subsampled images saved in it.
 import os
 import random
 import shutil
-# change these as necessary
+# Path of the original dataset
 original_path = r"D:\Ari\Uni\TUE\8P361\train+val\train"
+# Path where the subsampled dataset will be created, directory can't exist already.
 subsampled_path = r"D:\Ari\Uni\TUE\8P361\train+val_sub_75\train"
 # change this to whatever you want
 subsample_factor = 0.75

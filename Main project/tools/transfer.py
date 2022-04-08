@@ -1,9 +1,7 @@
-from keras.applications.densenet import EfficientNetB0
-from keras.layers import GlobalAveragePooling2D
-
-from GAN import *
-
-
+from keras.applications.efficientnet import EfficientNetB0
+from keras.layers import GlobalAveragePooling2D, BatchNormalization, Conv2D, LeakyReLU, Flatten, Dropout, Dense, Input
+from keras.models import Model, clone_model
+from tensorflow.keras.optimizers import Adam
 def transfer_classifier(transfer_source, lr=0.0005):
     """
     Constructs a classifier with weights transferred from a source model.
@@ -30,7 +28,7 @@ def transfer_classifier(transfer_source, lr=0.0005):
     for i in model.layers[-7:]:
         i.trainable = True
     model.compile(loss="binary_crossentropy",
-                  optimizer=tf.keras.optimizers.Adam(learning_rate=lr, beta_1=0.9, beta_2=0.999), metrics=['accuracy'])
+                  optimizer=Adam(learning_rate=lr, beta_1=0.9, beta_2=0.999), metrics=['accuracy'])
     return model
 
 
@@ -45,7 +43,7 @@ def classifier(model_source, lr=0.0005):
         model: The compiled classification model
     """
     # clone_model() re-initializes the weights.
-    model_source = keras.models.clone_model(model_source)
+    model_source = clone_model(model_source)
     inputs = model_source.inputs
     x = BatchNormalization()(model_source.layers[-4].output)
     x = Dropout(0.5)(x)
@@ -53,7 +51,7 @@ def classifier(model_source, lr=0.0005):
     model = Model(inputs=inputs, outputs=outputs)
     model.trainable = True
     model.compile(loss="binary_crossentropy",
-                  optimizer=tf.keras.optimizers.Adam(lr=lr, beta_1=0.9, beta_2=0.999), metrics=['accuracy'])
+                  optimizer=Adam(lr=lr, beta_1=0.9, beta_2=0.999), metrics=['accuracy'])
     return model
 
 
@@ -79,5 +77,5 @@ def pre_trained(lr=0.0005):
     output = Dense(1, activation='sigmoid')(model)
     model = Model(inputs=input, outputs=output)
     model.compile(loss="binary_crossentropy",
-                  optimizer=tf.keras.optimizers.Adam(lr=lr, beta_1=0.9, beta_2=0.999), metrics=['accuracy'])
+                  optimizer=Adam(lr=lr, beta_1=0.9, beta_2=0.999), metrics=['accuracy'])
     return model

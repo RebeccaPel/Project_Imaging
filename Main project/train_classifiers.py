@@ -22,7 +22,12 @@ from transfer import transfer_classifier, classifier, pre_trained
 from custom_layers import MinibatchDiscrimination
 from utils import get_pcam_generators
 
-
+# set to true if you want to save the trained models.
+save = False
+# Input the path to the "Main Project" folder here
+base_path = r"C:\Users\justi\Documents\Project_Imaging\Main project"
+# Input the path to the train+val folder of the dataset here
+data_path = r'C:\Users\justi\PycharmProjects\pythonProject\train+val'
 image_size = (32, 32)
 batch_size = 64
 epochs = 20
@@ -37,11 +42,10 @@ model_name_3 = 'efficientnet'
 # load the discriminator from the GAN
 init = initializers.get("glorot_uniform")
 # This should be the path to your saved discriminator file.
-discriminator = keras.models.load_model('models/gan_discriminator_epoch_Upsampling_190.h5',
+discriminator = keras.models.load_model(base_path + '/models/gan_discriminator_epoch_Upsampling_190.h5',
                                         custom_objects={'MinibatchDiscrimination': MinibatchDiscrimination,
                                                         'GlorotUniform': init})
-# change this path to where you have the SUBSAMPLED dataset
-train_gen, val_gen = get_pcam_generators(r'C:\Users\justi\PycharmProjects\pythonProject\train+val_sub_25',
+train_gen, val_gen = get_pcam_generators(data_path,
                                          image_size, batch_size, batch_size)
 transfer = transfer_classifier(discriminator)
 standard = classifier(discriminator)
@@ -52,7 +56,7 @@ tensorboard_2 = TensorBoard("logs/" + model_name_2)
 tensorboard_3 = TensorBoard("logs/" + model_name_3)
 
 # do initial training of the transfer model
-print("training")
+print("training \n")
 print("transfer")
 transfer.fit(train_gen, batch_size=batch_size, steps_per_epoch=steps, epochs=epochs//2, verbose=1,
              callbacks=[tensorboard_1, early_stop], validation_data=val_gen)
@@ -73,7 +77,7 @@ standard.compile(loss="binary_crossentropy",
 standard.fit(train_gen, batch_size=batch_size, steps_per_epoch=steps, epochs=epochs//2, verbose=1,
              callbacks=[tensorboard_2, early_stop], validation_data=val_gen)
 
-print("pre_trained")
+print("pre_trained \n")
 pre_trained.fit(train_gen, batch_size=batch_size, steps_per_epoch=steps, epochs=epochs//2, verbose=1,
                 callbacks=[tensorboard_3, early_stop], validation_data=val_gen)
 pre_trained.compile(loss="binary_crossentropy",
@@ -82,14 +86,14 @@ pre_trained.compile(loss="binary_crossentropy",
 pre_trained.fit(train_gen, batch_size=batch_size, steps_per_epoch=steps, epochs=epochs//2, verbose=1,
                 callbacks=[tensorboard_3, early_stop], validation_data=val_gen)
 
-print("evaluating")
+print("evaluating \n")
 print("transfer")
 transfer.evaluate(val_gen, steps=val_steps, batch_size=batch_size)
 print("standard")
 standard.evaluate(val_gen, steps=val_steps, batch_size=batch_size)
 print("pre_trained")
 pre_trained.evaluate(val_gen, steps=val_steps, batch_size=batch_size)
-
-keras.models.save_model(transfer, r"models/transfer_classifier_{}%.h5".format(subsample_factor))
-keras.models.save_model(standard, r"models/regular_classifer_{}%.h5".format(subsample_factor))
-keras.models.save_model(pre_trained, r"models/efficientnet_classifer_{}%.h5".format(subsample_factor))
+if save:
+    keras.models.save_model(transfer, base_path + r"models/transfer_classifier_{}%.h5".format(subsample_factor))
+    keras.models.save_model(standard, base_path + r"models/regular_classifer_{}%.h5".format(subsample_factor))
+    keras.models.save_model(pre_trained, base_path + r"models/efficientnet_classifer_{}%.h5".format(subsample_factor))

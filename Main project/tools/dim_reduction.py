@@ -98,7 +98,7 @@ def get_weights(model, layer):
         next_layer_weights = False
     else:
         next_layer = conv_indices[layer + 1]
-        next_layer_weights = disc.layers[next_layer].weights[0] + disc.layers[next_layer].weights[1]
+        next_layer_weights = model.layers[next_layer].weights[0] + model.layers[next_layer].weights[1]
     return layer_weights, next_layer_weights
 
 

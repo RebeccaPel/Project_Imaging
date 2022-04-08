@@ -1,6 +1,7 @@
 """
 Code for evaluation of the GAN. Loads the three generator and generates some images,
-then plots both real and generated images, and the table with the model architecture.
+then plots both real and generated images, and generates the table with the model architecture in the file
+model_plot_GAN.
 Then calculates the Inception Score and Fréchet Distance for a set of images.
 
 @author: N. Hartog, J. Kleinveld, A. Masot, R. Pelsser
@@ -19,14 +20,16 @@ from keras.applications.inception_v3 import InceptionV3
 
 from keras.utils.vis_utils import plot_model
 
-# Set path to train data
+# Input the path to the "Main Project" folder here
+base_path = r"C:\Users\justi\Documents\Project_Imaging\Main project"
+# Input the path to the train+val folder of the dataset here
 data_path = r'C:\Users\justi\PycharmProjects\pythonProject\train+val'
 
 latent_dim = 500
 image_size = (32, 32)
 batch_size = 8
 generator = get_generator_histopathology(latent_dim)
-generator.load_weights(r'\models\gan_generator_epoch_Upsampling_190.h5')
+generator.load_weights(base_path + r'\models\gan_generator_epoch_Upsampling_190.h5')
 train_gen, val_gen = get_pcam_generators(data_path,
                                          image_size, batch_size, batch_size)
 
@@ -40,7 +43,7 @@ for i in range(10):
     plotImages(real_images, dim=(2,4), figsize=(10,10), title="Real Images")
 
 # Obtain the table with the model architecture
-plot_model(generator, to_file='model_plot3.png', show_shapes=True, show_layer_names=True)
+plot_model(generator, to_file='model_plot_GAN.png', show_shapes=True, show_layer_names=True)
 
 batch_size = 1000
 
@@ -67,7 +70,7 @@ model = InceptionV3(include_top=False, pooling='avg', input_shape=(299, 299, 3))
 
 # Calculate Frechet distance
 image_size = (32, 32)
-train_gen, val_gen = get_pcam_generators(r'C:\Users\justi\PycharmProjects\pythonProject\train+val',
+train_gen, val_gen = get_pcam_generators(data_path,
                                          image_size, batch_size, batch_size)
 real_images = val_gen[0][0]
 real_images = scale_images(real_images, (299, 299, 3))

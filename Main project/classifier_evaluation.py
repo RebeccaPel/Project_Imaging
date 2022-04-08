@@ -44,7 +44,6 @@ files.remove('gan_generator_epoch_Upsampling_190.h5')
 for i in range(4):
     for j in range(i, 12, 4):
         model = files[j]
-        print(model)
         if model[0:12] == "efficientnet":
             efficient = keras.models.load_model(base_path + r'\\models\\' + model,
                                                 custom_objects={'MinibatchDiscrimination': MinibatchDiscrimination,

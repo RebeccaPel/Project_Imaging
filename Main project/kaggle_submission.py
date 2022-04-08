@@ -27,14 +27,16 @@ import sys
 sys.path.append("tools")
 from custom_layers import MinibatchDiscrimination
 
-#Change these variables to point at the locations and names of the test dataset and your models.
-TEST_PATH = r'C:\Users\justi\PycharmProjects\pythonProject\test/'
-model_path = 'models'
+# Input the path to the "Main Project" folder here
+base_path = r"C:\Users\justi\Documents\Project_Imaging\Main project"
+# Input the path to the test folder of the dataset here
+data_path = r'C:\Users\justi\PycharmProjects\pythonProject\test\\'
 # load the classifier
 init = initializers.get("glorot_uniform")
 
 # open the test set in batches (as it is a very big dataset) and make predictions
-test_files = glob.glob(TEST_PATH + '*.tif')
+test_files = glob.glob(data_path + '*.tif')
+model_path = base_path + r"\models"
 
 submission = pd.DataFrame()
 
@@ -42,9 +44,10 @@ file_batch = 5000
 max_idx = len(test_files)
 print(max_idx)
 files = os.listdir(model_path)
-print(files)
+files.remove('gan_discriminator_epoch_Upsampling_190.h5')
+files.remove('gan_generator_epoch_Upsampling_190.h5')
 for file in files:
-    model = keras.models.load_model(os.path.join('models',file),
+    model = keras.models.load_model(os.path.join(model_path, file),
                                    custom_objects={'MinibatchDiscrimination': MinibatchDiscrimination,
                                                    'GlorotUniform': init})
     for idx in range(0, max_idx, file_batch):
